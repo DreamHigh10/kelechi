@@ -1,36 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Send, 
-  MessageCircle, 
-  Mail, 
-  ChevronRight, 
-  Layout, 
-  Palette, 
-  Calendar, 
-  Instagram, 
-  Facebook,
-  ArrowUpRight,
-  Menu,
-  X,
-  CheckCircle2,
-  Target,
-  Zap,
-  Award
-} from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
 
-/**
- * NEXUS VISUALS - BRAND CONFIGURATION
- */
 const DATA = {
   brand: {
     name: "Nexus Visuals",
-    initials: "NV",
     tagline: "Clean Visuals. Strong Impact.",
     email: "nexusvisuals70@gmail.com",
     whatsapp: "2348000000000",
     instagram: "nexus_visuals",
     facebook: "Nexus Visuals Studios",
-    logoUrl: "https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=800&auto=format&fit=crop", 
+    logoUrl: "https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=800&auto=format&fit=crop",
   },
   designTips: [
     "Clean design attracts more customers.",
@@ -40,37 +18,37 @@ const DATA = {
     "Consistency builds brand trust.",
   ],
   services: [
-    { 
-      id: 'flyers',
-      title: "Premium Flyer Design", 
+    {
+      id: "flyers",
+      title: "Premium Flyer Design",
       price: "Starting at $40",
       description: "High-impact visual communication for businesses, events, and promotions. We focus on hierarchy and legibility.",
       features: ["48-hour delivery", "3 Revisions", "Print-ready files", "Social media resize"],
-      icon: <Palette className="w-6 h-6" /> 
+      icon: "🎨",
     },
-    { 
-      id: 'social',
-      title: "Social Media Design", 
+    {
+      id: "social",
+      title: "Social Media Design",
       price: "Custom Quotes",
       description: "Engaging content for Instagram, Facebook, and Twitter. Designed to stop the scroll and drive interaction.",
       features: ["Content Calendar", "Story & Feed sizing", "Brand patterns", "Highlight covers"],
-      icon: <Layout className="w-6 h-6" /> 
+      icon: "📱",
     },
-    { 
-      id: 'monthly',
-      title: "Monthly Packages", 
+    {
+      id: "monthly",
+      title: "Monthly Packages",
       price: "Retainer Based",
-      description: "A dedicated design partner for your brand. Get consistent visuals every month without the overhead of an employee.",
+      description: "A dedicated design partner for your brand. Get consistent visuals every month without the overhead.",
       features: ["Priority Support", "Unlimited requests", "Fixed monthly fee", "Brand strategy"],
-      icon: <Calendar className="w-6 h-6" /> 
+      icon: "📅",
     },
-    { 
-      id: 'events',
-      title: "Event & Church Flyers", 
+    {
+      id: "events",
+      title: "Event & Church Flyers",
       price: "Special Rates",
       description: "Visuals that capture the spirit of your gathering. Perfect for conferences, concerts, and Sunday services.",
       features: ["Thematic design", "Fast turnaround", "Visual consistency", "Web banners"],
-      icon: <CheckCircle2 className="w-6 h-6" /> 
+      icon: "✝️",
     },
   ],
   portfolio: [
@@ -80,295 +58,707 @@ const DATA = {
     { id: 4, cat: "Business", title: "Scale Up Expo", img: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=800" },
     { id: 5, cat: "Food", title: "Artisan Pizza", img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800" },
     { id: 6, cat: "Business", title: "Tech Summit", img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800" },
-  ]
+  ],
 };
 
-// --- SHARED COMPONENTS ---
+const CATS = ["All", "Food", "Fashion", "Church", "Business"];
 
-const Navigation = ({ currentPage, setPage }) => {
-  const [isOpen, setIsOpen] = useState(false);
+// ─── NAVIGATION ───────────────────────────────────────────────
+function Navigation({ page, setPage }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Home', id: 'home' },
-    { name: 'Portfolio', id: 'portfolio' },
-    { name: 'Services', id: 'services' },
-    { name: 'About', id: 'about' },
-    { name: 'Contact', id: 'contact' },
-  ];
-
-  const handleNav = (id) => {
-    setPage(id);
-    setIsOpen(false);
-    window.scrollTo(0, 0);
-  };
+  const nav = (id) => { setPage(id); setMenuOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const links = ["home", "portfolio", "services", "about", "contact"];
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'bg-zinc-950/95 backdrop-blur-md py-4 shadow-2xl' : 'bg-transparent py-8'}`}>
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => handleNav('home')}>
-          <img src={DATA.brand.logoUrl} alt="Logo" className="w-12 h-12 rounded-full border-2 border-amber-500/30 object-cover group-hover:scale-110 transition-transform" />
-          <div className="flex flex-col">
-            <span className="text-white font-black text-lg tracking-tighter uppercase leading-none">{DATA.brand.name}</span>
-            <span className="text-[9px] text-amber-500 font-bold tracking-[0.2em] uppercase leading-none mt-1">Premium Solutions</span>
-          </div>
-        </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
 
-        <div className="hidden md:flex gap-10 items-center">
-          {navLinks.map((link) => (
-            <button key={link.id} onClick={() => handleNav(link.id)} className={`text-[11px] font-black uppercase tracking-[0.2em] transition-all ${currentPage === link.id ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
-              {link.name}
-            </button>
-          ))}
-          <button onClick={() => handleNav('contact')} className="bg-white text-black px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-amber-500 hover:text-white transition-all">
-            Start Project
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { background: #050505; color: #e8e0d5; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+
+        :root {
+          --gold: #c9a96e;
+          --gold-light: #e8c98a;
+          --black: #050505;
+          --surface: #0f0f0f;
+          --border: rgba(201,169,110,0.15);
+          --text-muted: #6b6460;
+          --text-dim: #3a3530;
+        }
+
+        ::selection { background: var(--gold); color: #000; }
+
+        .bebas { font-family: 'Bebas Neue', cursive; letter-spacing: 0.03em; }
+        .playfair { font-family: 'Playfair Display', serif; }
+
+        button { cursor: pointer; border: none; background: none; font-family: inherit; }
+        input, textarea { font-family: inherit; outline: none; }
+        a { text-decoration: none; color: inherit; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+        /* Animations */
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes grain {
+          0%, 100% { transform: translate(0, 0); }
+          10% { transform: translate(-2%, -3%); }
+          30% { transform: translate(1%, 2%); }
+          50% { transform: translate(-1%, 3%); }
+          70% { transform: translate(2%, -1%); }
+          90% { transform: translate(-2%, 1%); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
+        }
+        @keyframes ticker {
+          0% { opacity: 0; transform: translateY(6px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-up { animation: fadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .fade-up-2 { animation: fadeUp 0.9s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .fade-up-3 { animation: fadeUp 0.9s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .fade-up-4 { animation: fadeUp 0.9s 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .slide-in { animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* Grain overlay */
+        .grain::after {
+          content: '';
+          position: fixed;
+          inset: -50%;
+          width: 200%; height: 200%;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+          opacity: 0.04;
+          pointer-events: none;
+          z-index: 9999;
+          animation: grain 8s steps(1) infinite;
+        }
+
+        /* Gold shimmer text */
+        .gold-shimmer {
+          background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 40%, #fff 50%, var(--gold-light) 60%, var(--gold) 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: shimmer 4s linear infinite;
+        }
+
+        /* Hover card lift */
+        .card-lift { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s; }
+        .card-lift:hover { transform: translateY(-8px); }
+
+        /* Nav */
+        .nav-bar {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+          transition: all 0.5s;
+        }
+        .nav-bar.scrolled {
+          background: rgba(5,5,5,0.95);
+          backdrop-filter: blur(20px);
+          border-bottom: 1px solid var(--border);
+        }
+        .nav-inner {
+          max-width: 1300px; margin: 0 auto;
+          padding: 0 32px;
+          height: 80px;
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 14px; cursor: pointer; }
+        .nav-logo img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(201,169,110,0.4); transition: transform 0.3s; }
+        .nav-logo:hover img { transform: scale(1.1) rotate(5deg); }
+        .nav-logo-text { line-height: 1; }
+        .nav-logo-name { font-family: 'Bebas Neue', cursive; font-size: 22px; letter-spacing: 2px; color: #e8e0d5; }
+        .nav-logo-sub { font-size: 9px; letter-spacing: 3px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-top: 2px; display: block; }
+
+        .nav-links { display: flex; align-items: center; gap: 40px; }
+        .nav-link {
+          font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+          color: var(--text-muted); transition: color 0.3s; position: relative;
+        }
+        .nav-link:hover, .nav-link.active { color: #e8e0d5; }
+        .nav-link.active::after {
+          content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+          height: 1px; background: var(--gold);
+        }
+        .nav-cta {
+          background: var(--gold); color: #000; padding: 10px 24px;
+          border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+          transition: all 0.3s;
+        }
+        .nav-cta:hover { background: var(--gold-light); transform: scale(1.05); }
+
+        .hamburger { display: none; flex-direction: column; gap: 5px; padding: 8px; }
+        .hamburger span { display: block; width: 24px; height: 2px; background: #e8e0d5; transition: all 0.3s; border-radius: 2px; }
+
+        @media (max-width: 768px) {
+          .nav-links { display: none; }
+          .hamburger { display: flex; }
+        }
+
+        .mobile-menu {
+          position: fixed; inset: 0; background: #050505; z-index: 200;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 32px;
+        }
+        .mobile-menu-close { position: absolute; top: 24px; right: 24px; font-size: 28px; color: #e8e0d5; }
+        .mobile-link { font-family: 'Bebas Neue', cursive; font-size: 56px; letter-spacing: 4px; color: var(--text-dim); transition: color 0.3s; }
+        .mobile-link:hover, .mobile-link.active { color: var(--gold); }
+
+        /* Hero */
+        .hero { min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; padding: 0 32px; }
+        .hero-bg {
+          position: absolute; inset: 0;
+          background: radial-gradient(ellipse 60% 80% at 70% 50%, rgba(201,169,110,0.05) 0%, transparent 70%);
+        }
+        .hero-line {
+          position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+          width: 40%; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,169,110,0.3));
+        }
+        .hero-content { max-width: 1300px; margin: 0 auto; width: 100%; padding-top: 100px; }
+        .hero-label { font-size: 10px; letter-spacing: 4px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 24px; display: block; }
+        .hero-title {
+          font-family: 'Bebas Neue', cursive;
+          font-size: clamp(80px, 13vw, 200px);
+          line-height: 0.85;
+          color: #e8e0d5;
+          letter-spacing: 2px;
+          margin-bottom: 32px;
+        }
+        .hero-title .dim { color: var(--text-dim); }
+        .hero-title .gold { color: var(--gold); }
+        .hero-sub { max-width: 480px; font-size: 18px; line-height: 1.7; color: var(--text-muted); margin-bottom: 48px; font-weight: 300; }
+        .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
+        .btn-primary {
+          background: var(--gold); color: #000; padding: 16px 36px;
+          border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+          transition: all 0.3s; display: flex; align-items: center; gap: 10px;
+        }
+        .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 20px 40px rgba(201,169,110,0.3); }
+        .btn-outline {
+          border: 1px solid rgba(201,169,110,0.3); color: #e8e0d5; padding: 16px 36px;
+          border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+          transition: all 0.3s;
+        }
+        .btn-outline:hover { border-color: var(--gold); background: rgba(201,169,110,0.05); transform: translateY(-2px); }
+
+        .hero-stats { display: flex; gap: 48px; margin-top: 80px; padding-top: 48px; border-top: 1px solid var(--border); }
+        .stat-num { font-family: 'Bebas Neue', cursive; font-size: 48px; color: var(--gold); line-height: 1; }
+        .stat-label { font-size: 10px; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 4px; }
+
+        /* Section layout */
+        .section { padding: 120px 32px; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .section-label { font-size: 10px; letter-spacing: 4px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 16px; display: block; }
+        .section-title {
+          font-family: 'Bebas Neue', cursive;
+          font-size: clamp(60px, 8vw, 120px);
+          line-height: 0.9; letter-spacing: 2px;
+          color: #e8e0d5; margin-bottom: 60px;
+        }
+
+        /* Portfolio */
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 48px; flex-wrap: wrap; }
+        .filter-btn {
+          padding: 8px 20px; border-radius: 100px; font-size: 10px; font-weight: 700;
+          letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s;
+          border: 1px solid var(--border); color: var(--text-muted);
+        }
+        .filter-btn:hover { border-color: rgba(201,169,110,0.5); color: #e8e0d5; }
+        .filter-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
+
+        .portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        @media (max-width: 900px) { .portfolio-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .portfolio-grid { grid-template-columns: 1fr; } }
+
+        .portfolio-item {
+          position: relative; aspect-ratio: 3/4; border-radius: 24px; overflow: hidden;
+          border: 1px solid var(--border); cursor: pointer; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .portfolio-item:hover { transform: scale(1.02); }
+        .portfolio-item img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) brightness(0.4); transition: all 0.8s; }
+        .portfolio-item:hover img { filter: grayscale(0) brightness(0.7); transform: scale(1.08); }
+        .portfolio-overlay {
+          position: absolute; inset: 0;
+          background: linear-gradient(to top, rgba(5,5,5,0.9) 0%, transparent 50%);
+          padding: 28px; display: flex; flex-direction: column; justify-content: flex-end;
+        }
+        .portfolio-cat { font-size: 9px; letter-spacing: 3px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+        .portfolio-name { font-family: 'Bebas Neue', cursive; font-size: 28px; letter-spacing: 2px; color: #e8e0d5; }
+
+        /* Services */
+        .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        @media (max-width: 700px) { .services-grid { grid-template-columns: 1fr; } }
+
+        .service-card {
+          background: var(--surface); border: 1px solid var(--border);
+          border-radius: 32px; padding: 48px; transition: border-color 0.3s, transform 0.4s;
+          position: relative; overflow: hidden;
+        }
+        .service-card::before {
+          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+          background: linear-gradient(90deg, transparent, var(--gold), transparent);
+          opacity: 0; transition: opacity 0.3s;
+        }
+        .service-card:hover::before { opacity: 1; }
+        .service-card:hover { border-color: rgba(201,169,110,0.3); transform: translateY(-6px); }
+
+        .service-icon { font-size: 36px; margin-bottom: 28px; display: block; }
+        .service-title { font-family: 'Bebas Neue', cursive; font-size: 36px; letter-spacing: 2px; color: #e8e0d5; margin-bottom: 16px; }
+        .service-desc { font-size: 15px; line-height: 1.7; color: var(--text-muted); margin-bottom: 28px; }
+        .service-features { list-style: none; margin-bottom: 32px; }
+        .service-features li {
+          font-size: 12px; font-weight: 600; letter-spacing: 1px; color: var(--text-muted);
+          padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px;
+        }
+        .service-features li::before { content: '◆'; color: var(--gold); font-size: 6px; }
+        .service-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--border); }
+        .service-price { font-family: 'Bebas Neue', cursive; font-size: 22px; color: var(--gold); letter-spacing: 2px; }
+        .service-book {
+          font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+          color: #e8e0d5; display: flex; align-items: center; gap: 6px; transition: color 0.3s;
+          background: none; border: none;
+        }
+        .service-book:hover { color: var(--gold); }
+
+        /* About */
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+        @media (max-width: 768px) { .about-grid { grid-template-columns: 1fr; } }
+        .about-img-wrap {
+          aspect-ratio: 1; border-radius: 48px; overflow: hidden;
+          border: 2px solid var(--border); position: relative;
+        }
+        .about-img-wrap img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.6) brightness(0.6); }
+        .about-img-wrap::after {
+          content: '';  position: absolute; inset: 0;
+          background: linear-gradient(135deg, rgba(201,169,110,0.1) 0%, transparent 100%);
+        }
+        .about-text p { font-size: 16px; line-height: 1.9; color: var(--text-muted); margin-bottom: 20px; }
+        .about-values { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 40px; }
+        .value-item { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+        .value-icon { font-size: 24px; margin-bottom: 10px; }
+        .value-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #e8e0d5; margin-bottom: 4px; }
+        .value-text { font-size: 13px; color: var(--text-muted); }
+
+        /* Contact */
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+        @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
+
+        .contact-form-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 40px; padding: 48px; }
+        .form-group { margin-bottom: 20px; }
+        .form-input {
+          width: 100%; background: #050505; border: 1px solid var(--border);
+          border-radius: 16px; padding: 18px 20px; color: #e8e0d5; font-size: 15px;
+          transition: border-color 0.3s;
+        }
+        .form-input:focus { border-color: rgba(201,169,110,0.6); }
+        .form-input::placeholder { color: var(--text-dim); }
+        textarea.form-input { resize: vertical; min-height: 140px; }
+        .form-submit {
+          width: 100%; background: var(--gold); color: #000; padding: 18px;
+          border-radius: 16px; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+          transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .form-submit:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 20px 40px rgba(201,169,110,0.3); }
+        .form-submit.sent { background: #2a4a2a; color: #6bab6b; }
+
+        .contact-info { display: flex; flex-direction: column; justify-content: center; gap: 40px; }
+        .contact-block-label { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; display: block; }
+        .contact-link { font-family: 'Bebas Neue', cursive; font-size: 36px; letter-spacing: 2px; color: #e8e0d5; transition: color 0.3s; display: block; }
+        .contact-link:hover { color: var(--gold); }
+        .contact-email { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
+        .social-row { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+        .social-icon { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.3s; }
+        .social-icon:hover { border-color: var(--gold); background: rgba(201,169,110,0.1); }
+        .social-handle { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+
+        /* Ticker */
+        .ticker {
+          position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+          z-index: 50; pointer-events: none;
+        }
+        .ticker-inner {
+          background: rgba(15,15,15,0.96); backdrop-filter: blur(20px);
+          border: 1px solid var(--border); border-left: 3px solid var(--gold);
+          border-radius: 16px; padding: 14px 22px;
+          display: flex; align-items: center; gap: 14px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+          animation: ticker 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .ticker-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse 2s infinite; flex-shrink: 0; }
+        .ticker-text { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #e8e0d5; white-space: nowrap; }
+
+        /* Footer */
+        .footer { padding: 60px 32px; border-top: 1px solid var(--border); }
+        .footer-inner { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
+        .footer-copy { font-size: 11px; letter-spacing: 1px; color: var(--text-muted); }
+        .footer-links { display: flex; gap: 32px; }
+        .footer-link { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: var(--text-dim); transition: color 0.3s; }
+        .footer-link:hover { color: var(--gold); }
+      `}</style>
+
+      <nav className={`nav-bar${scrolled ? " scrolled" : ""}`}>
+        <div className="nav-inner">
+          <div className="nav-logo" onClick={() => nav("home")}>
+            <img src={DATA.brand.logoUrl} alt="Logo" />
+            <div className="nav-logo-text">
+              <div className="nav-logo-name">{DATA.brand.name}</div>
+              <span className="nav-logo-sub">Premium Design</span>
+            </div>
+          </div>
+
+          <div className="nav-links">
+            {links.map((l) => (
+              <button key={l} onClick={() => nav(l)} className={`nav-link${page === l ? " active" : ""}`}>{l}</button>
+            ))}
+            <button onClick={() => nav("contact")} className="nav-cta">Start Project</button>
+          </div>
+
+          <button className="hamburger" onClick={() => setMenuOpen(true)}>
+            <span /><span /><span />
           </button>
         </div>
+      </nav>
 
-        <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}><Menu /></button>
-      </div>
-
-      {isOpen && (
-        <div className="fixed inset-0 bg-zinc-950 z-40 flex flex-col items-center justify-center gap-8 md:hidden">
-          <button onClick={() => setIsOpen(false)} className="absolute top-8 right-6 text-white"><X /></button>
-          {navLinks.map((link) => (
-            <button key={link.id} onClick={() => handleNav(link.id)} className={`text-3xl font-black uppercase tracking-tighter ${currentPage === link.id ? 'text-amber-500' : 'text-zinc-700'}`}>{link.name}</button>
+      {menuOpen && (
+        <div className="mobile-menu">
+          <button className="mobile-menu-close" onClick={() => setMenuOpen(false)}>✕</button>
+          {links.map((l) => (
+            <button key={l} onClick={() => nav(l)} className={`mobile-link${page === l ? " active" : ""}`}>{l.toUpperCase()}</button>
           ))}
         </div>
       )}
-    </nav>
+    </>
   );
-};
+}
 
-const TipTicker = () => {
-  const [index, setIndex] = useState(0);
-  const [fade, setFade] = useState(true);
+// ─── TICKER ───────────────────────────────────────────────────
+function Ticker() {
+  const [idx, setIdx] = useState(0);
+  const [key, setKey] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        setIndex((prev) => (prev + 1) % DATA.designTips.length);
-        setFade(true);
-      }, 500);
-    }, 10000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => {
+      setIdx((p) => (p + 1) % DATA.designTips.length);
+      setKey((k) => k + 1);
+    }, 6000);
+    return () => clearInterval(t);
   }, []);
 
   return (
-    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-40 w-full max-w-sm px-6 pointer-events-none">
-      <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 p-4 rounded-2xl shadow-2xl flex items-center gap-4 border-l-4 border-l-amber-500">
-        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-        <p className={`text-[10px] uppercase tracking-[0.2em] text-zinc-300 font-black transition-opacity duration-500 ${fade ? 'opacity-100' : 'opacity-0'}`}>
-          Tip: {DATA.designTips[index]}
-        </p>
+    <div className="ticker">
+      <div className="ticker-inner" key={key}>
+        <div className="ticker-dot" />
+        <span className="ticker-text">💡 {DATA.designTips[idx]}</span>
       </div>
     </div>
   );
-};
+}
 
-// --- PAGE COMPONENTS ---
-
-const HomePage = ({ setPage }) => (
-  <div className="animate-fade-in">
-    <section className="min-h-screen flex items-center px-6 relative overflow-hidden">
-      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-amber-900/10 rounded-full blur-[120px]" />
-      <div className="max-w-7xl mx-auto w-full pt-20">
-        <div className="max-w-4xl">
-          <span className="inline-block text-amber-500 font-black text-xs uppercase tracking-[0.4em] mb-6 animate-fade-in">World-Class Brand Design</span>
-          <h1 className="text-[12vw] md:text-[8.5vw] font-black text-white leading-[0.8] tracking-tighter mb-8">
-            GOLD<br /><span className="text-zinc-800">STANDARD.</span><br />VISUALS.
+// ─── HOME ─────────────────────────────────────────────────────
+function Home({ setPage }) {
+  return (
+    <div>
+      <section className="hero">
+        <div className="hero-bg" />
+        <div className="hero-line" />
+        <div className="hero-content">
+          <span className="hero-label fade-up">World-Class Brand Design Studio</span>
+          <h1 className="hero-title fade-up-2">
+            GOLD<br />
+            <span className="dim">STANDARD.</span><br />
+            <span className="gold">VISUALS.</span>
           </h1>
-          <p className="text-xl text-zinc-400 mb-12 max-w-xl leading-relaxed">
-            We transform vision into reality. From high-fashion launches to corporate branding, we define the visual prestige of your business.
+          <p className="hero-sub fade-up-3">
+            We transform vision into reality. From high-fashion launches to corporate branding — we define the visual prestige of your business.
           </p>
-          <div className="flex flex-wrap gap-6">
-            <button onClick={() => setPage('portfolio')} className="bg-white text-black px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest flex items-center gap-3 hover:bg-amber-500 hover:text-white transition-all">
-              View Showcase <ArrowUpRight size={20} />
+          <div className="hero-btns fade-up-4">
+            <button className="btn-primary" onClick={() => setPage("portfolio")}>
+              View Showcase <span>→</span>
             </button>
-            <button onClick={() => setPage('services')} className="border border-zinc-800 text-white px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest hover:bg-white/5 transition-all">
+            <button className="btn-outline" onClick={() => setPage("services")}>
               Our Services
             </button>
+          </div>
+
+          <div className="hero-stats fade-up-4">
+            {[["150+", "Projects Delivered"], ["48hr", "Avg. Turnaround"], ["100%", "Client Satisfaction"], ["3+", "Years Active"]].map(([n, l]) => (
+              <div key={l}>
+                <div className="stat-num gold-shimmer">{n}</div>
+                <div className="stat-label">{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ─── PORTFOLIO ────────────────────────────────────────────────
+function Portfolio() {
+  const [active, setActive] = useState("All");
+  const filtered = active === "All" ? DATA.portfolio : DATA.portfolio.filter((p) => p.cat === active);
+
+  return (
+    <section className="section">
+      <div className="container">
+        <span className="section-label fade-up">Selected Work</span>
+        <h1 className="section-title fade-up-2">THE<br />VAULT.</h1>
+
+        <div className="filter-bar fade-up-3">
+          {CATS.map((c) => (
+            <button key={c} className={`filter-btn${active === c ? " active" : ""}`} onClick={() => setActive(c)}>{c}</button>
+          ))}
+        </div>
+
+        <div className="portfolio-grid">
+          {filtered.map((item) => (
+            <div key={item.id} className="portfolio-item">
+              <img src={item.img} alt={item.title} />
+              <div className="portfolio-overlay">
+                <div className="portfolio-cat">{item.cat}</div>
+                <div className="portfolio-name">{item.title}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── SERVICES ─────────────────────────────────────────────────
+function Services({ setPage }) {
+  return (
+    <section className="section">
+      <div className="container">
+        <span className="section-label fade-up">What We Offer</span>
+        <h1 className="section-title fade-up-2">PREMIUM<br />OFFERS.</h1>
+
+        <div className="services-grid">
+          {DATA.services.map((s) => (
+            <div key={s.id} className="service-card">
+              <span className="service-icon">{s.icon}</span>
+              <div className="service-title">{s.title}</div>
+              <p className="service-desc">{s.description}</p>
+              <ul className="service-features">
+                {s.features.map((f) => <li key={f}>{f}</li>)}
+              </ul>
+              <div className="service-footer">
+                <span className="service-price">{s.price}</span>
+                <button className="service-book" onClick={() => setPage("contact")}>
+                  Book Now →
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── ABOUT ────────────────────────────────────────────────────
+function About() {
+  return (
+    <section className="section">
+      <div className="container">
+        <div className="about-grid">
+          <div className="about-text">
+            <span className="section-label fade-up">Our Story</span>
+            <h1 className="section-title fade-up-2" style={{ fontSize: "clamp(50px,6vw,90px)" }}>VISUAL<br />ALCHEMISTS.</h1>
+            <p className="fade-up-3">Nexus Visuals was founded on the principle that design should be a powerful business asset. We blend artistic precision with strategic brand thinking to create visuals that don't just look good — they convert.</p>
+            <p className="fade-up-3">Based in Nigeria, serving the world. From Lagos to London, our clients trust us to represent their brands at the highest level.</p>
+            <div className="about-values fade-up-4">
+              {[
+                ["🎯", "Precision", "Every pixel intentional."],
+                ["⚡", "Speed", "48hr standard turnaround."],
+                ["🏆", "Quality", "Premium, always."],
+                ["🤝", "Loyalty", "Long-term partnerships."],
+              ].map(([icon, title, text]) => (
+                <div className="value-item" key={title}>
+                  <div className="value-icon">{icon}</div>
+                  <div className="value-title">{title}</div>
+                  <div className="value-text">{text}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="about-img-wrap fade-up-2">
+            <img src={DATA.brand.logoUrl} alt="Nexus Visuals" />
           </div>
         </div>
       </div>
     </section>
-  </div>
-);
+  );
+}
 
-const PortfolioPage = () => (
-  <div className="pt-40 pb-32 px-6 animate-fade-in">
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-20">
-        <h1 className="text-7xl md:text-9xl font-black text-white tracking-tighter mb-6 uppercase leading-none">The<br />Vault</h1>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {DATA.portfolio.map(item => (
-          <div key={item.id} className="group relative aspect-[3/4] rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-800">
-            <img src={item.img} alt={item.title} className="w-full h-full object-cover grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000" />
-            <div className="absolute inset-x-0 bottom-0 p-10">
-              <span className="text-[10px] text-amber-500 font-black uppercase tracking-[0.3em] mb-3 block">{item.cat}</span>
-              <h4 className="text-2xl font-black text-white uppercase tracking-tighter">{item.title}</h4>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
-const ServicesPage = () => (
-  <div className="pt-40 pb-32 px-6 animate-fade-in">
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-20 text-center">
-        <h1 className="text-7xl md:text-9xl font-black text-white tracking-tighter mb-8 uppercase leading-none">Premium<br />Offers</h1>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {DATA.services.map(service => (
-          <div key={service.id} className="bg-zinc-900/50 border border-zinc-800 p-12 rounded-[3rem] hover:border-amber-500/50 transition-all">
-            <div className="w-16 h-16 bg-white text-black rounded-2xl flex items-center justify-center mb-10">{service.icon}</div>
-            <h3 className="text-4xl font-black text-white uppercase tracking-tight mb-6">{service.title}</h3>
-            <p className="text-zinc-400 mb-10 text-lg leading-relaxed">{service.description}</p>
-            <div className="pt-8 border-t border-zinc-800 flex justify-between items-center">
-              <span className="text-amber-500 font-black tracking-widest">{service.price}</span>
-              <button className="text-white font-bold flex items-center gap-2">Book Now <ChevronRight size={18} /></button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
-const AboutPage = () => (
-  <div className="pt-40 pb-32 px-6 animate-fade-in">
-    <div className="max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-        <div>
-          <span className="text-amber-500 font-black uppercase tracking-[0.4em] mb-6 block">Our Story</span>
-          <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-10 uppercase leading-none">Visual<br />Alchemists.</h1>
-          <p className="text-zinc-400 text-xl leading-relaxed">
-            Nexus Visuals was founded on the principle that design should be a powerful business asset. We blend artistic precision with strategic brand thinking.
-          </p>
-        </div>
-        <div className="aspect-square rounded-[4rem] overflow-hidden bg-zinc-900 border-8 border-zinc-800">
-          <img src={DATA.brand.logoUrl} alt="Logo" className="w-full h-full object-cover grayscale brightness-50" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const ContactPage = () => {
+// ─── CONTACT ──────────────────────────────────────────────────
+function Contact() {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
-  
-  const handleSend = (e) => {
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const e = {};
+    if (!form.name.trim()) e.name = "Name required";
+    if (!form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) e.email = "Valid email required";
+    if (!form.message.trim()) e.message = "Message required";
+    return e;
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setSent(true);
-    setTimeout(() => setSent(false), 4000);
+    setForm({ name: "", email: "", message: "" });
+    setErrors({});
+    setTimeout(() => setSent(false), 5000);
   };
 
   return (
-    <div className="pt-40 pb-32 px-6 animate-fade-in">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-7xl md:text-9xl font-black text-white tracking-tighter mb-20 uppercase leading-none text-center">Let's<br />Talk.</h1>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="bg-zinc-900 p-12 md:p-16 rounded-[4rem] border border-zinc-800">
-            <form onSubmit={handleSend} className="space-y-8">
-              <input required placeholder="Name" className="w-full bg-black border border-zinc-800 p-5 rounded-2xl text-white focus:border-amber-500 transition-colors" />
-              <input required type="email" placeholder="Email" className="w-full bg-black border border-zinc-800 p-5 rounded-2xl text-white focus:border-amber-500 transition-colors" />
-              <textarea placeholder="Tell us about your project..." rows="5" className="w-full bg-black border border-zinc-800 p-5 rounded-2xl text-white focus:border-amber-500 transition-colors"></textarea>
-              <button className="w-full bg-white text-black font-black uppercase tracking-widest p-6 rounded-2xl hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center gap-3">
-                {sent ? "Message Received" : "Launch Project"} <Send size={20} />
+    <section className="section">
+      <div className="container">
+        <span className="section-label fade-up">Get In Touch</span>
+        <h1 className="section-title fade-up-2" style={{ textAlign: "center" }}>LET'S<br />TALK.</h1>
+
+        <div className="contact-grid">
+          <div className="contact-form-wrap fade-up-3">
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="form-group">
+                <input
+                  className="form-input"
+                  placeholder="Your Name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  style={errors.name ? { borderColor: "#c05050" } : {}}
+                />
+                {errors.name && <div style={{ color: "#c05050", fontSize: 12, marginTop: 6 }}>{errors.name}</div>}
+              </div>
+              <div className="form-group">
+                <input
+                  className="form-input"
+                  type="email"
+                  placeholder="Email Address"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  style={errors.email ? { borderColor: "#c05050" } : {}}
+                />
+                {errors.email && <div style={{ color: "#c05050", fontSize: 12, marginTop: 6 }}>{errors.email}</div>}
+              </div>
+              <div className="form-group">
+                <textarea
+                  className="form-input"
+                  placeholder="Tell us about your project..."
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  style={errors.message ? { borderColor: "#c05050" } : {}}
+                />
+                {errors.message && <div style={{ color: "#c05050", fontSize: 12, marginTop: 6 }}>{errors.message}</div>}
+              </div>
+              <button className={`form-submit${sent ? " sent" : ""}`} type="submit">
+                {sent ? "✓ Message Received!" : "Launch Project →"}
               </button>
             </form>
           </div>
-          <div className="flex flex-col justify-center gap-10 lg:pl-12">
+
+          <div className="contact-info fade-up-4">
             <div>
-              <span className="text-amber-500 font-black uppercase tracking-widest text-[10px] mb-4 block">Direct Access</span>
-              <a href={`https://wa.me/${DATA.brand.whatsapp}`} className="text-4xl font-black text-white hover:text-amber-500 transition-colors block">WhatsApp</a>
-              <p className="text-zinc-500 mt-2">{DATA.brand.email}</p>
+              <span className="contact-block-label">Direct WhatsApp</span>
+              <a className="contact-link" href={`https://wa.me/${DATA.brand.whatsapp}`} target="_blank" rel="noreferrer">WhatsApp Us</a>
+              <div className="contact-email">{DATA.brand.email}</div>
             </div>
-            <div className="pt-10 border-t border-zinc-900">
-              <span className="text-zinc-600 font-black uppercase tracking-widest text-[10px] mb-6 block">Social Connect</span>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 group">
-                  <Facebook className="text-zinc-500 group-hover:text-amber-500 transition-colors" />
-                  <span className="text-white font-bold uppercase tracking-widest text-sm">{DATA.brand.facebook}</span>
-                </div>
-                <div className="flex items-center gap-4 group">
-                  <Instagram className="text-zinc-500 group-hover:text-amber-500 transition-colors" />
-                  <span className="text-white font-bold uppercase tracking-widest text-sm">@{DATA.brand.instagram}</span>
-                </div>
+            <div style={{ borderTop: "1px solid var(--border)", paddingTop: 32 }}>
+              <span className="contact-block-label">Social Connect</span>
+              <div className="social-row">
+                <div className="social-icon">📘</div>
+                <span className="social-handle">{DATA.brand.facebook}</span>
               </div>
+              <div className="social-row">
+                <div className="social-icon">📸</div>
+                <span className="social-handle">@{DATA.brand.instagram}</span>
+              </div>
+            </div>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 24 }}>
+              <div style={{ fontSize: 11, letterSpacing: 2, color: "var(--gold)", fontWeight: 700, textTransform: "uppercase", marginBottom: 10 }}>Response Time</div>
+              <div style={{ fontFamily: "'Bebas Neue', cursive", fontSize: 40, color: "#e8e0d5", letterSpacing: 2 }}>{"< 2 HRS"}</div>
+              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>We respond fast. Your project can't wait.</div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
-};
+}
 
-// --- MAIN APP COMPONENT ---
+// ─── FOOTER ───────────────────────────────────────────────────
+function Footer({ setPage }) {
+  return (
+    <footer className="footer">
+      <div className="footer-inner">
+        <div>
+          <div style={{ fontFamily: "'Bebas Neue', cursive", fontSize: 28, letterSpacing: 3, color: "#e8e0d5", marginBottom: 6 }}>{DATA.brand.name}</div>
+          <div className="footer-copy">© {new Date().getFullYear()} Nexus Visuals Studio. All rights reserved.</div>
+        </div>
+        <div className="footer-links">
+          {["home", "portfolio", "services", "about", "contact"].map((l) => (
+            <button key={l} className="footer-link" onClick={() => setPage(l)}>{l}</button>
+          ))}
+        </div>
+      </div>
+    </footer>
+  );
+}
 
+// ─── APP ──────────────────────────────────────────────────────
 export default function App() {
-  const [page, setPage] = useState('home');
+  const [page, setPage] = useState("home");
 
-  useEffect(() => {
-    let link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
-    }
-    link.href = DATA.brand.logoUrl;
-    document.title = `${DATA.brand.name} | ${DATA.brand.facebook}`;
-  }, []);
+  const setPageAndScroll = (p) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const pages = {
+    home: <Home setPage={setPageAndScroll} />,
+    portfolio: <Portfolio />,
+    services: <Services setPage={setPageAndScroll} />,
+    about: <About />,
+    contact: <Contact />,
+  };
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 selection:bg-amber-500 selection:text-white">
-      <Navigation currentPage={page} setPage={setPage} />
-      <main>{page === 'home' ? <HomePage setPage={setPage} /> : page === 'portfolio' ? <PortfolioPage /> : page === 'services' ? <ServicesPage /> : page === 'about' ? <AboutPage /> : <ContactPage />}</main>
-
-      <footer className="py-24 px-6 border-t border-zinc-900 bg-black">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12">
-          <div className="max-w-xs">
-            <div className="flex items-center gap-3 mb-6">
-              <img src={DATA.brand.logoUrl} className="w-10 h-10 rounded-full object-cover" alt="Logo" />
-              <span className="text-white font-black uppercase tracking-tighter text-xl">{DATA.brand.name}</span>
-            </div>
-            <p className="text-zinc-600 text-[10px] uppercase font-black tracking-widest">©️ {new Date().getFullYear()} Nexus Visuals Studio.</p>
-          </div>
-          <div className="flex gap-12">
-            <div className="flex flex-col gap-4">
-              <span className="text-white text-[10px] font-black uppercase tracking-widest">Follow Us</span>
-              <div className="flex gap-4">
-                <Instagram size={18} className="text-zinc-500 hover:text-amber-500 cursor-pointer transition-colors" />
-                <Facebook size={18} className="text-zinc-500 hover:text-amber-500 cursor-pointer transition-colors" />
-              </div>
-            </div>
-            <div className="flex flex-col gap-4">
-              <span className="text-white text-[10px] font-black uppercase tracking-widest">Facebook</span>
-              <span className="text-zinc-500 text-xs font-bold uppercase tracking-tighter">{DATA.brand.facebook}</span>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      <TipTicker />
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fade-in 1s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
-        html { scroll-behavior: smooth; }
-        body { background-color: #000; overflow-x: hidden; }
-      `}} />
+    <div className="grain">
+      <Navigation page={page} setPage={setPageAndScroll} />
+      <main style={{ minHeight: "100vh" }}>{pages[page]}</main>
+      <Footer setPage={setPageAndScroll} />
+      <Ticker />
     </div>
   );
 }
