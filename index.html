@@ -1,764 +1,546 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from 'react';
+import { 
+  Menu, X, Mail, MessageCircle, Facebook, 
+  ArrowRight, Layout, Image as ImageIcon, Calendar, Sparkles, 
+  CheckCircle2, Send 
+} from 'lucide-react';
 
-const DATA = {
+/* ======================================================================
+  CONTENT CONFIGURATION (BUILDER-FRIENDLY)
+  Edit the text, links, and images below to update the website content.
+======================================================================
+*/
+const CONTENT = {
   brand: {
     name: "Nexus Visuals",
-    tagline: "Clean Visuals. Strong Impact.",
-    email: "nexusvisuals70@gmail.com",
-    whatsapp: "2348000000000",
-    instagram: "nexus_visuals",
-    facebook: "Nexus Visuals Studios",
-    logoUrl: "https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=800&auto=format&fit=crop",
+    initials: "NV",
   },
-  designTips: [
+  hero: {
+    tagline: "Clean Visuals. Strong Impact.",
+    intro: "We create premium flyer designs for brands, businesses, and events.",
+    cta1: "View Portfolio",
+    cta2: "Contact Me"
+  },
+  about: {
+    title: "About Us",
+    description: "Nexus Visuals is a creative design brand focused on delivering clean, modern, and high-quality visuals that help brands stand out and attract customers. We believe in the power of minimalism, precision, and striking typography to tell your brand's unique story."
+  },
+  tips: [
     "Clean design attracts more customers.",
     "Less clutter, more impact.",
-    "Typography tells a story before words do.",
-    "Whitespace is room for focus.",
     "Consistency builds brand trust.",
+    "Great visuals tell a compelling story.",
+    "White space is an active design element."
   ],
   services: [
     {
-      id: "flyers",
+      id: 1,
       title: "Premium Flyer Design",
-      price: "Starting at $40",
-      description: "High-impact visual communication for businesses, events, and promotions. We focus on hierarchy and legibility.",
-      features: ["48-hour delivery", "3 Revisions", "Print-ready files", "Social media resize"],
-      icon: "🎨",
+      desc: "High-end flyers that capture attention immediately.",
+      icon: "sparkles"
     },
     {
-      id: "social",
+      id: 2,
       title: "Social Media Design",
-      price: "Custom Quotes",
-      description: "Engaging content for Instagram, Facebook, and Twitter. Designed to stop the scroll and drive interaction.",
-      features: ["Content Calendar", "Story & Feed sizing", "Brand patterns", "Highlight covers"],
-      icon: "📱",
+      desc: "Cohesive feeds and engaging post graphics.",
+      icon: "layout"
     },
     {
-      id: "monthly",
-      title: "Monthly Packages",
-      price: "Retainer Based",
-      description: "A dedicated design partner for your brand. Get consistent visuals every month without the overhead.",
-      features: ["Priority Support", "Unlimited requests", "Fixed monthly fee", "Brand strategy"],
-      icon: "📅",
+      id: 3,
+      title: "Monthly Design Packages",
+      desc: "Consistent visual branding on a retainer basis.",
+      icon: "calendar"
     },
     {
-      id: "events",
+      id: 4,
       title: "Event & Church Flyers",
-      price: "Special Rates",
-      description: "Visuals that capture the spirit of your gathering. Perfect for conferences, concerts, and Sunday services.",
-      features: ["Thematic design", "Fast turnaround", "Visual consistency", "Web banners"],
-      icon: "✝️",
-    },
+      desc: "Elegant and structured designs for gatherings.",
+      icon: "image"
+    }
   ],
   portfolio: [
-    { id: 1, cat: "Food", title: "Midnight Cravings", img: "https://images.unsplash.com/photo-1594179047519-f347310d3322?q=80&w=800" },
-    { id: 2, cat: "Fashion", title: "Vogue Streetwear", img: "https://images.unsplash.com/photo-1539109132381-31a15b22b707?q=80&w=800" },
-    { id: 3, cat: "Church", title: "Grace Encounter", img: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=800" },
-    { id: 4, cat: "Business", title: "Scale Up Expo", img: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=800" },
-    { id: 5, cat: "Food", title: "Artisan Pizza", img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800" },
-    { id: 6, cat: "Business", title: "Tech Summit", img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800" },
+    { id: 1, category: "Food", src: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=800", alt: "Gourmet Food Flyer" },
+    { id: 2, category: "Fashion", src: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800", alt: "Fashion Brand Promo" },
+    { id: 3, category: "Event", src: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=800", alt: "Church/Event Flyer" },
+    { id: 4, category: "Business", src: "https://images.unsplash.com/photo-1556761175-5973dc0f32b7?auto=format&fit=crop&q=80&w=800", alt: "Corporate Business Flyer" },
+    { id: 5, category: "Fashion", src: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=800", alt: "Fashion Lookbook" },
+    { id: 6, category: "Food", src: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80&w=800", alt: "Restaurant Menu Promo" },
   ],
+  contact: {
+    email: "nexusvisuals70@gmail.com",
+    whatsapp: "+2340000000000", // Update with actual number
+    facebook: "Nexus Visuals Studios",
+    facebookLink: "#", // Update with actual URL
+    cta: "Let’s work together"
+  }
 };
 
-const CATS = ["All", "Food", "Fashion", "Church", "Business"];
+/* ======================================================================
+  COMPONENTS
+======================================================================
+*/
 
-// ─── NAVIGATION ───────────────────────────────────────────────
-function Navigation({ page, setPage }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+const IconMap = {
+  sparkles: Sparkles,
+  layout: Layout,
+  calendar: Calendar,
+  image: ImageIcon,
+};
+
+// 1. Hook to Inject Custom Favicon
+const useFavicon = () => {
+  useEffect(() => {
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <rect width="100" height="100" fill="#09090b" rx="20"/>
+        <text x="50%" y="55%" font-family="sans-serif" font-weight="900" font-size="44" fill="#fafafa" text-anchor="middle" dominant-baseline="middle">
+          ${CONTENT.brand.initials}
+        </text>
+      </svg>
+    `;
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = url;
+    return () => URL.revokeObjectURL(url);
+  }, []);
+};
+
+// 2. Rotating Tip Component
+const RotatingTip = () => {
+  const [index, setIndex] = useState(0);
+  const [fade, setFade] = useState(true);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const interval = setInterval(() => {
+      setFade(false); 
+      setTimeout(() => {
+        setIndex((prev) => (prev + 1) % CONTENT.tips.length);
+        setFade(true); 
+      }, 500); 
+    }, 10000); 
+
+    return () => clearInterval(interval);
   }, []);
 
-  const nav = (id) => { setPage(id); setMenuOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const links = ["home", "portfolio", "services", "about", "contact"];
+  return (
+    <div className="fixed bottom-6 right-6 z-40 max-w-xs bg-neutral-900/90 backdrop-blur-md border border-neutral-800 text-neutral-300 text-sm px-4 py-3 rounded-2xl shadow-2xl pointer-events-none hidden md:flex items-start space-x-3">
+      <Sparkles className="w-4 h-4 text-neutral-500 mt-0.5 flex-shrink-0" />
+      <div className={`transition-opacity duration-500 ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}>
+        <span className="font-medium text-white block mb-0.5">Design Tip</span>
+        {CONTENT.tips[index]}
+      </div>
+    </div>
+  );
+};
+
+// 3. Page Views
+const HomeView = ({ navigate }) => {
+  // Parallax / Artistic Mouse Tracker
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    let frameId;
+    const handleMouseMove = (e) => {
+      cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        const x = (e.clientX / window.innerWidth) * 2 - 1;
+        const y = (e.clientY / window.innerHeight) * 2 - 1;
+        setMousePos({ x, y });
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(frameId);
+    };
+  }, []);
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+    <div className="relative flex flex-col items-center justify-center min-h-[85vh] text-center px-4 w-full overflow-hidden">
+      
+      {/* ARTISTIC AMBIENT BACKGROUND */}
+      <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
+        
+        {/* Floating Glowing Orbs that react to mouse */}
+        <div className="absolute top-1/4 left-1/4 w-[25rem] h-[25rem] bg-indigo-600/10 rounded-full blur-[100px] transition-transform duration-700 ease-out"
+             style={{ transform: `translate(${mousePos.x * -60}px, ${mousePos.y * -60}px)` }}></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[25rem] h-[25rem] bg-fuchsia-600/10 rounded-full blur-[100px] transition-transform duration-700 ease-out"
+             style={{ transform: `translate(${mousePos.x * 60}px, ${mousePos.y * 60}px)` }}></div>
+        
+        {/* Rotating Geometric Abstract "Nexus" Mesh */}
+        <div className="absolute transition-transform duration-700 ease-out opacity-[0.15] text-neutral-400"
+             style={{ transform: `translate(${mousePos.x * 30}px, ${mousePos.y * 30}px) rotate(${mousePos.x * 10}deg)` }}>
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-[600px] h-[600px] md:w-[800px] md:h-[800px] animate-spin-slow">
+            <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" strokeWidth="0.2" strokeDasharray="2 6" />
+            <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="0.3" opacity="0.5"/>
+            <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="currentColor" strokeWidth="0.3" transform="rotate(30 100 100)" />
+            <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="currentColor" strokeWidth="0.3" transform="rotate(-30 100 100)" />
+            <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="currentColor" strokeWidth="0.3" transform="rotate(90 100 100)" />
+            <circle cx="100" cy="100" r="2" fill="currentColor" />
+          </svg>
+        </div>
+      </div>
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body { background: #050505; color: #e8e0d5; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
-
-        :root {
-          --gold: #c9a96e;
-          --gold-light: #e8c98a;
-          --black: #050505;
-          --surface: #0f0f0f;
-          --border: rgba(201,169,110,0.15);
-          --text-muted: #6b6460;
-          --text-dim: #3a3530;
-        }
-
-        ::selection { background: var(--gold); color: #000; }
-
-        .bebas { font-family: 'Bebas Neue', cursive; letter-spacing: 0.03em; }
-        .playfair { font-family: 'Playfair Display', serif; }
-
-        button { cursor: pointer; border: none; background: none; font-family: inherit; }
-        input, textarea { font-family: inherit; outline: none; }
-        a { text-decoration: none; color: inherit; }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
-
-        /* Animations */
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(40px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(-30px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes grain {
-          0%, 100% { transform: translate(0, 0); }
-          10% { transform: translate(-2%, -3%); }
-          30% { transform: translate(1%, 2%); }
-          50% { transform: translate(-1%, 3%); }
-          70% { transform: translate(2%, -1%); }
-          90% { transform: translate(-2%, 1%); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
-        }
-        @keyframes ticker {
-          0% { opacity: 0; transform: translateY(6px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-up { animation: fadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .fade-up-2 { animation: fadeUp 0.9s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .fade-up-3 { animation: fadeUp 0.9s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .fade-up-4 { animation: fadeUp 0.9s 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .slide-in { animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-        /* Grain overlay */
-        .grain::after {
-          content: '';
-          position: fixed;
-          inset: -50%;
-          width: 200%; height: 200%;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
-          opacity: 0.04;
-          pointer-events: none;
-          z-index: 9999;
-          animation: grain 8s steps(1) infinite;
-        }
-
-        /* Gold shimmer text */
-        .gold-shimmer {
-          background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 40%, #fff 50%, var(--gold-light) 60%, var(--gold) 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          animation: shimmer 4s linear infinite;
-        }
-
-        /* Hover card lift */
-        .card-lift { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s; }
-        .card-lift:hover { transform: translateY(-8px); }
-
-        /* Nav */
-        .nav-bar {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-          transition: all 0.5s;
-        }
-        .nav-bar.scrolled {
-          background: rgba(5,5,5,0.95);
-          backdrop-filter: blur(20px);
-          border-bottom: 1px solid var(--border);
-        }
-        .nav-inner {
-          max-width: 1300px; margin: 0 auto;
-          padding: 0 32px;
-          height: 80px;
-          display: flex; align-items: center; justify-content: space-between;
-        }
-        .nav-logo { display: flex; align-items: center; gap: 14px; cursor: pointer; }
-        .nav-logo img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(201,169,110,0.4); transition: transform 0.3s; }
-        .nav-logo:hover img { transform: scale(1.1) rotate(5deg); }
-        .nav-logo-text { line-height: 1; }
-        .nav-logo-name { font-family: 'Bebas Neue', cursive; font-size: 22px; letter-spacing: 2px; color: #e8e0d5; }
-        .nav-logo-sub { font-size: 9px; letter-spacing: 3px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-top: 2px; display: block; }
-
-        .nav-links { display: flex; align-items: center; gap: 40px; }
-        .nav-link {
-          font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-          color: var(--text-muted); transition: color 0.3s; position: relative;
-        }
-        .nav-link:hover, .nav-link.active { color: #e8e0d5; }
-        .nav-link.active::after {
-          content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
-          height: 1px; background: var(--gold);
-        }
-        .nav-cta {
-          background: var(--gold); color: #000; padding: 10px 24px;
-          border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-          transition: all 0.3s;
-        }
-        .nav-cta:hover { background: var(--gold-light); transform: scale(1.05); }
-
-        .hamburger { display: none; flex-direction: column; gap: 5px; padding: 8px; }
-        .hamburger span { display: block; width: 24px; height: 2px; background: #e8e0d5; transition: all 0.3s; border-radius: 2px; }
-
-        @media (max-width: 768px) {
-          .nav-links { display: none; }
-          .hamburger { display: flex; }
-        }
-
-        .mobile-menu {
-          position: fixed; inset: 0; background: #050505; z-index: 200;
-          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 32px;
-        }
-        .mobile-menu-close { position: absolute; top: 24px; right: 24px; font-size: 28px; color: #e8e0d5; }
-        .mobile-link { font-family: 'Bebas Neue', cursive; font-size: 56px; letter-spacing: 4px; color: var(--text-dim); transition: color 0.3s; }
-        .mobile-link:hover, .mobile-link.active { color: var(--gold); }
-
-        /* Hero */
-        .hero { min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; padding: 0 32px; }
-        .hero-bg {
-          position: absolute; inset: 0;
-          background: radial-gradient(ellipse 60% 80% at 70% 50%, rgba(201,169,110,0.05) 0%, transparent 70%);
-        }
-        .hero-line {
-          position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-          width: 40%; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,169,110,0.3));
-        }
-        .hero-content { max-width: 1300px; margin: 0 auto; width: 100%; padding-top: 100px; }
-        .hero-label { font-size: 10px; letter-spacing: 4px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 24px; display: block; }
-        .hero-title {
-          font-family: 'Bebas Neue', cursive;
-          font-size: clamp(80px, 13vw, 200px);
-          line-height: 0.85;
-          color: #e8e0d5;
-          letter-spacing: 2px;
-          margin-bottom: 32px;
-        }
-        .hero-title .dim { color: var(--text-dim); }
-        .hero-title .gold { color: var(--gold); }
-        .hero-sub { max-width: 480px; font-size: 18px; line-height: 1.7; color: var(--text-muted); margin-bottom: 48px; font-weight: 300; }
-        .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
-        .btn-primary {
-          background: var(--gold); color: #000; padding: 16px 36px;
-          border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-          transition: all 0.3s; display: flex; align-items: center; gap: 10px;
-        }
-        .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 20px 40px rgba(201,169,110,0.3); }
-        .btn-outline {
-          border: 1px solid rgba(201,169,110,0.3); color: #e8e0d5; padding: 16px 36px;
-          border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-          transition: all 0.3s;
-        }
-        .btn-outline:hover { border-color: var(--gold); background: rgba(201,169,110,0.05); transform: translateY(-2px); }
-
-        .hero-stats { display: flex; gap: 48px; margin-top: 80px; padding-top: 48px; border-top: 1px solid var(--border); }
-        .stat-num { font-family: 'Bebas Neue', cursive; font-size: 48px; color: var(--gold); line-height: 1; }
-        .stat-label { font-size: 10px; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 4px; }
-
-        /* Section layout */
-        .section { padding: 120px 32px; }
-        .container { max-width: 1300px; margin: 0 auto; }
-        .section-label { font-size: 10px; letter-spacing: 4px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 16px; display: block; }
-        .section-title {
-          font-family: 'Bebas Neue', cursive;
-          font-size: clamp(60px, 8vw, 120px);
-          line-height: 0.9; letter-spacing: 2px;
-          color: #e8e0d5; margin-bottom: 60px;
-        }
-
-        /* Portfolio */
-        .filter-bar { display: flex; gap: 8px; margin-bottom: 48px; flex-wrap: wrap; }
-        .filter-btn {
-          padding: 8px 20px; border-radius: 100px; font-size: 10px; font-weight: 700;
-          letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s;
-          border: 1px solid var(--border); color: var(--text-muted);
-        }
-        .filter-btn:hover { border-color: rgba(201,169,110,0.5); color: #e8e0d5; }
-        .filter-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
-
-        .portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-        @media (max-width: 900px) { .portfolio-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .portfolio-grid { grid-template-columns: 1fr; } }
-
-        .portfolio-item {
-          position: relative; aspect-ratio: 3/4; border-radius: 24px; overflow: hidden;
-          border: 1px solid var(--border); cursor: pointer; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .portfolio-item:hover { transform: scale(1.02); }
-        .portfolio-item img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) brightness(0.4); transition: all 0.8s; }
-        .portfolio-item:hover img { filter: grayscale(0) brightness(0.7); transform: scale(1.08); }
-        .portfolio-overlay {
-          position: absolute; inset: 0;
-          background: linear-gradient(to top, rgba(5,5,5,0.9) 0%, transparent 50%);
-          padding: 28px; display: flex; flex-direction: column; justify-content: flex-end;
-        }
-        .portfolio-cat { font-size: 9px; letter-spacing: 3px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
-        .portfolio-name { font-family: 'Bebas Neue', cursive; font-size: 28px; letter-spacing: 2px; color: #e8e0d5; }
-
-        /* Services */
-        .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
-        @media (max-width: 700px) { .services-grid { grid-template-columns: 1fr; } }
-
-        .service-card {
-          background: var(--surface); border: 1px solid var(--border);
-          border-radius: 32px; padding: 48px; transition: border-color 0.3s, transform 0.4s;
-          position: relative; overflow: hidden;
-        }
-        .service-card::before {
-          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-          background: linear-gradient(90deg, transparent, var(--gold), transparent);
-          opacity: 0; transition: opacity 0.3s;
-        }
-        .service-card:hover::before { opacity: 1; }
-        .service-card:hover { border-color: rgba(201,169,110,0.3); transform: translateY(-6px); }
-
-        .service-icon { font-size: 36px; margin-bottom: 28px; display: block; }
-        .service-title { font-family: 'Bebas Neue', cursive; font-size: 36px; letter-spacing: 2px; color: #e8e0d5; margin-bottom: 16px; }
-        .service-desc { font-size: 15px; line-height: 1.7; color: var(--text-muted); margin-bottom: 28px; }
-        .service-features { list-style: none; margin-bottom: 32px; }
-        .service-features li {
-          font-size: 12px; font-weight: 600; letter-spacing: 1px; color: var(--text-muted);
-          padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px;
-        }
-        .service-features li::before { content: '◆'; color: var(--gold); font-size: 6px; }
-        .service-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--border); }
-        .service-price { font-family: 'Bebas Neue', cursive; font-size: 22px; color: var(--gold); letter-spacing: 2px; }
-        .service-book {
-          font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-          color: #e8e0d5; display: flex; align-items: center; gap: 6px; transition: color 0.3s;
-          background: none; border: none;
-        }
-        .service-book:hover { color: var(--gold); }
-
-        /* About */
-        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-        @media (max-width: 768px) { .about-grid { grid-template-columns: 1fr; } }
-        .about-img-wrap {
-          aspect-ratio: 1; border-radius: 48px; overflow: hidden;
-          border: 2px solid var(--border); position: relative;
-        }
-        .about-img-wrap img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.6) brightness(0.6); }
-        .about-img-wrap::after {
-          content: '';  position: absolute; inset: 0;
-          background: linear-gradient(135deg, rgba(201,169,110,0.1) 0%, transparent 100%);
-        }
-        .about-text p { font-size: 16px; line-height: 1.9; color: var(--text-muted); margin-bottom: 20px; }
-        .about-values { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 40px; }
-        .value-item { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
-        .value-icon { font-size: 24px; margin-bottom: 10px; }
-        .value-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #e8e0d5; margin-bottom: 4px; }
-        .value-text { font-size: 13px; color: var(--text-muted); }
-
-        /* Contact */
-        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
-        @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
-
-        .contact-form-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 40px; padding: 48px; }
-        .form-group { margin-bottom: 20px; }
-        .form-input {
-          width: 100%; background: #050505; border: 1px solid var(--border);
-          border-radius: 16px; padding: 18px 20px; color: #e8e0d5; font-size: 15px;
-          transition: border-color 0.3s;
-        }
-        .form-input:focus { border-color: rgba(201,169,110,0.6); }
-        .form-input::placeholder { color: var(--text-dim); }
-        textarea.form-input { resize: vertical; min-height: 140px; }
-        .form-submit {
-          width: 100%; background: var(--gold); color: #000; padding: 18px;
-          border-radius: 16px; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-          transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        .form-submit:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 20px 40px rgba(201,169,110,0.3); }
-        .form-submit.sent { background: #2a4a2a; color: #6bab6b; }
-
-        .contact-info { display: flex; flex-direction: column; justify-content: center; gap: 40px; }
-        .contact-block-label { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; display: block; }
-        .contact-link { font-family: 'Bebas Neue', cursive; font-size: 36px; letter-spacing: 2px; color: #e8e0d5; transition: color 0.3s; display: block; }
-        .contact-link:hover { color: var(--gold); }
-        .contact-email { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
-        .social-row { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-        .social-icon { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.3s; }
-        .social-icon:hover { border-color: var(--gold); background: rgba(201,169,110,0.1); }
-        .social-handle { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-
-        /* Ticker */
-        .ticker {
-          position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
-          z-index: 50; pointer-events: none;
-        }
-        .ticker-inner {
-          background: rgba(15,15,15,0.96); backdrop-filter: blur(20px);
-          border: 1px solid var(--border); border-left: 3px solid var(--gold);
-          border-radius: 16px; padding: 14px 22px;
-          display: flex; align-items: center; gap: 14px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-          animation: ticker 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .ticker-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse 2s infinite; flex-shrink: 0; }
-        .ticker-text { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #e8e0d5; white-space: nowrap; }
-
-        /* Footer */
-        .footer { padding: 60px 32px; border-top: 1px solid var(--border); }
-        .footer-inner { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
-        .footer-copy { font-size: 11px; letter-spacing: 1px; color: var(--text-muted); }
-        .footer-links { display: flex; gap: 32px; }
-        .footer-link { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: var(--text-dim); transition: color 0.3s; }
-        .footer-link:hover { color: var(--gold); }
-      `}</style>
-
-      <nav className={`nav-bar${scrolled ? " scrolled" : ""}`}>
-        <div className="nav-inner">
-          <div className="nav-logo" onClick={() => nav("home")}>
-            <img src={DATA.brand.logoUrl} alt="Logo" />
-            <div className="nav-logo-text">
-              <div className="nav-logo-name">{DATA.brand.name}</div>
-              <span className="nav-logo-sub">Premium Design</span>
-            </div>
-          </div>
-
-          <div className="nav-links">
-            {links.map((l) => (
-              <button key={l} onClick={() => nav(l)} className={`nav-link${page === l ? " active" : ""}`}>{l}</button>
-            ))}
-            <button onClick={() => nav("contact")} className="nav-cta">Start Project</button>
-          </div>
-
-          <button className="hamburger" onClick={() => setMenuOpen(true)}>
-            <span /><span /><span />
+      {/* FOREGROUND HERO CONTENT (With staggered entrance) */}
+      <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
+        <div 
+          className="inline-flex items-center space-x-2 bg-neutral-900 border border-neutral-800 px-4 py-2 rounded-full mb-8 animate-fade-in-up"
+          style={{ animationDelay: '0ms' }}
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+          </span>
+          <span className="text-xs font-medium tracking-widest uppercase text-neutral-300">Available for projects</span>
+        </div>
+        
+        <h1 
+          className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight animate-fade-in-up"
+          style={{ animationDelay: '150ms' }}
+        >
+          {CONTENT.hero.tagline.split('. ')[0]}. <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-neutral-200 to-neutral-600">
+            {CONTENT.hero.tagline.split('. ')[1]}
+          </span>
+        </h1>
+        
+        <p 
+          className="text-lg md:text-xl text-neutral-400 mb-10 max-w-2xl animate-fade-in-up"
+          style={{ animationDelay: '300ms' }}
+        >
+          {CONTENT.hero.intro}
+        </p>
+        
+        <div 
+          className="flex flex-col sm:flex-row items-center gap-4 animate-fade-in-up w-full justify-center"
+          style={{ animationDelay: '450ms' }}
+        >
+          <button 
+            onClick={() => navigate('portfolio')}
+            className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-full font-medium hover:bg-neutral-200 transition-colors flex items-center justify-center group shadow-lg shadow-white/5"
+          >
+            {CONTENT.hero.cta1}
+            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </button>
+          <button 
+            onClick={() => navigate('contact')}
+            className="w-full sm:w-auto bg-transparent border border-neutral-700 text-white px-8 py-4 rounded-full font-medium hover:bg-neutral-900 hover:border-neutral-500 transition-colors"
+          >
+            {CONTENT.hero.cta2}
           </button>
         </div>
-      </nav>
-
-      {menuOpen && (
-        <div className="mobile-menu">
-          <button className="mobile-menu-close" onClick={() => setMenuOpen(false)}>✕</button>
-          {links.map((l) => (
-            <button key={l} onClick={() => nav(l)} className={`mobile-link${page === l ? " active" : ""}`}>{l.toUpperCase()}</button>
-          ))}
-        </div>
-      )}
-    </>
-  );
-}
-
-// ─── TICKER ───────────────────────────────────────────────────
-function Ticker() {
-  const [idx, setIdx] = useState(0);
-  const [key, setKey] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => {
-      setIdx((p) => (p + 1) % DATA.designTips.length);
-      setKey((k) => k + 1);
-    }, 6000);
-    return () => clearInterval(t);
-  }, []);
-
-  return (
-    <div className="ticker">
-      <div className="ticker-inner" key={key}>
-        <div className="ticker-dot" />
-        <span className="ticker-text">💡 {DATA.designTips[idx]}</span>
       </div>
     </div>
   );
-}
+};
 
-// ─── HOME ─────────────────────────────────────────────────────
-function Home({ setPage }) {
-  return (
-    <div>
-      <section className="hero">
-        <div className="hero-bg" />
-        <div className="hero-line" />
-        <div className="hero-content">
-          <span className="hero-label fade-up">World-Class Brand Design Studio</span>
-          <h1 className="hero-title fade-up-2">
-            GOLD<br />
-            <span className="dim">STANDARD.</span><br />
-            <span className="gold">VISUALS.</span>
-          </h1>
-          <p className="hero-sub fade-up-3">
-            We transform vision into reality. From high-fashion launches to corporate branding — we define the visual prestige of your business.
-          </p>
-          <div className="hero-btns fade-up-4">
-            <button className="btn-primary" onClick={() => setPage("portfolio")}>
-              View Showcase <span>→</span>
-            </button>
-            <button className="btn-outline" onClick={() => setPage("services")}>
-              Our Services
-            </button>
-          </div>
-
-          <div className="hero-stats fade-up-4">
-            {[["150+", "Projects Delivered"], ["48hr", "Avg. Turnaround"], ["100%", "Client Satisfaction"], ["3+", "Years Active"]].map(([n, l]) => (
-              <div key={l}>
-                <div className="stat-num gold-shimmer">{n}</div>
-                <div className="stat-label">{l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+const PortfolioView = () => (
+  <div className="max-w-6xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
+    <div className="mb-12 md:mb-20">
+      <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Selected Works</h2>
+      <p className="text-neutral-400 text-lg">A showcase of premium flyer designs crafted for impact.</p>
     </div>
-  );
-}
-
-// ─── PORTFOLIO ────────────────────────────────────────────────
-function Portfolio() {
-  const [active, setActive] = useState("All");
-  const filtered = active === "All" ? DATA.portfolio : DATA.portfolio.filter((p) => p.cat === active);
-
-  return (
-    <section className="section">
-      <div className="container">
-        <span className="section-label fade-up">Selected Work</span>
-        <h1 className="section-title fade-up-2">THE<br />VAULT.</h1>
-
-        <div className="filter-bar fade-up-3">
-          {CATS.map((c) => (
-            <button key={c} className={`filter-btn${active === c ? " active" : ""}`} onClick={() => setActive(c)}>{c}</button>
-          ))}
-        </div>
-
-        <div className="portfolio-grid">
-          {filtered.map((item) => (
-            <div key={item.id} className="portfolio-item">
-              <img src={item.img} alt={item.title} />
-              <div className="portfolio-overlay">
-                <div className="portfolio-cat">{item.cat}</div>
-                <div className="portfolio-name">{item.title}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── SERVICES ─────────────────────────────────────────────────
-function Services({ setPage }) {
-  return (
-    <section className="section">
-      <div className="container">
-        <span className="section-label fade-up">What We Offer</span>
-        <h1 className="section-title fade-up-2">PREMIUM<br />OFFERS.</h1>
-
-        <div className="services-grid">
-          {DATA.services.map((s) => (
-            <div key={s.id} className="service-card">
-              <span className="service-icon">{s.icon}</span>
-              <div className="service-title">{s.title}</div>
-              <p className="service-desc">{s.description}</p>
-              <ul className="service-features">
-                {s.features.map((f) => <li key={f}>{f}</li>)}
-              </ul>
-              <div className="service-footer">
-                <span className="service-price">{s.price}</span>
-                <button className="service-book" onClick={() => setPage("contact")}>
-                  Book Now →
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── ABOUT ────────────────────────────────────────────────────
-function About() {
-  return (
-    <section className="section">
-      <div className="container">
-        <div className="about-grid">
-          <div className="about-text">
-            <span className="section-label fade-up">Our Story</span>
-            <h1 className="section-title fade-up-2" style={{ fontSize: "clamp(50px,6vw,90px)" }}>VISUAL<br />ALCHEMISTS.</h1>
-            <p className="fade-up-3">Nexus Visuals was founded on the principle that design should be a powerful business asset. We blend artistic precision with strategic brand thinking to create visuals that don't just look good — they convert.</p>
-            <p className="fade-up-3">Based in Nigeria, serving the world. From Lagos to London, our clients trust us to represent their brands at the highest level.</p>
-            <div className="about-values fade-up-4">
-              {[
-                ["🎯", "Precision", "Every pixel intentional."],
-                ["⚡", "Speed", "48hr standard turnaround."],
-                ["🏆", "Quality", "Premium, always."],
-                ["🤝", "Loyalty", "Long-term partnerships."],
-              ].map(([icon, title, text]) => (
-                <div className="value-item" key={title}>
-                  <div className="value-icon">{icon}</div>
-                  <div className="value-title">{title}</div>
-                  <div className="value-text">{text}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="about-img-wrap fade-up-2">
-            <img src={DATA.brand.logoUrl} alt="Nexus Visuals" />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {CONTENT.portfolio.map((item) => (
+        <div key={item.id} className="group relative aspect-[4/5] rounded-3xl overflow-hidden bg-neutral-900 border border-neutral-800">
+          <img 
+            src={item.src} 
+            alt={item.alt} 
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+            <span className="text-xs font-bold tracking-widest uppercase text-neutral-300 mb-1">{item.category}</span>
+            <h3 className="text-xl font-semibold text-white">{item.alt}</h3>
           </div>
         </div>
+      ))}
+    </div>
+  </div>
+);
+
+const ServicesView = () => (
+  <div className="max-w-6xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
+    <div className="mb-12 md:mb-20 max-w-2xl">
+      <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Expertise & Services</h2>
+      <p className="text-neutral-400 text-lg">Comprehensive design solutions tailored to elevate your brand's presence.</p>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {CONTENT.services.map((service) => {
+        const IconComponent = IconMap[service.icon];
+        return (
+          <div key={service.id} className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-3xl hover:bg-neutral-900 transition-colors">
+            <div className="bg-neutral-800 w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+              <IconComponent className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold mb-3">{service.title}</h3>
+            <p className="text-neutral-400 leading-relaxed">{service.desc}</p>
+          </div>
+        )
+      })}
+    </div>
+  </div>
+);
+
+const AboutView = () => (
+  <div className="max-w-4xl mx-auto px-4 py-12 md:py-20 min-h-[70vh] flex flex-col justify-center animate-fade-in-up">
+    <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-8">{CONTENT.about.title}</h2>
+    <div className="text-xl md:text-2xl text-neutral-300 leading-relaxed font-light space-y-6">
+      <p>{CONTENT.about.description}</p>
+      <div className="pt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {['Clean Aesthetics', 'Strategic Layouts', 'Premium Typography'].map((val, i) => (
+          <div key={i} className="flex items-center space-x-3">
+            <CheckCircle2 className="w-5 h-5 text-neutral-500" />
+            <span className="text-base font-medium">{val}</span>
+          </div>
+        ))}
       </div>
-    </section>
-  );
-}
+    </div>
+  </div>
+);
 
-// ─── CONTACT ──────────────────────────────────────────────────
-function Contact() {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [sent, setSent] = useState(false);
-  const [errors, setErrors] = useState({});
-
-  const validate = () => {
-    const e = {};
-    if (!form.name.trim()) e.name = "Name required";
-    if (!form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) e.email = "Valid email required";
-    if (!form.message.trim()) e.message = "Message required";
-    return e;
-  };
+const ContactView = () => {
+  const [formStatus, setFormStatus] = useState('idle');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    setSent(true);
-    setForm({ name: "", email: "", message: "" });
-    setErrors({});
-    setTimeout(() => setSent(false), 5000);
+    setFormStatus('sending');
+    setTimeout(() => setFormStatus('success'), 1500);
   };
 
   return (
-    <section className="section">
-      <div className="container">
-        <span className="section-label fade-up">Get In Touch</span>
-        <h1 className="section-title fade-up-2" style={{ textAlign: "center" }}>LET'S<br />TALK.</h1>
-
-        <div className="contact-grid">
-          <div className="contact-form-wrap fade-up-3">
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="form-group">
-                <input
-                  className="form-input"
-                  placeholder="Your Name"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  style={errors.name ? { borderColor: "#c05050" } : {}}
-                />
-                {errors.name && <div style={{ color: "#c05050", fontSize: 12, marginTop: 6 }}>{errors.name}</div>}
-              </div>
-              <div className="form-group">
-                <input
-                  className="form-input"
-                  type="email"
-                  placeholder="Email Address"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  style={errors.email ? { borderColor: "#c05050" } : {}}
-                />
-                {errors.email && <div style={{ color: "#c05050", fontSize: 12, marginTop: 6 }}>{errors.email}</div>}
-              </div>
-              <div className="form-group">
-                <textarea
-                  className="form-input"
-                  placeholder="Tell us about your project..."
-                  value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  style={errors.message ? { borderColor: "#c05050" } : {}}
-                />
-                {errors.message && <div style={{ color: "#c05050", fontSize: 12, marginTop: 6 }}>{errors.message}</div>}
-              </div>
-              <button className={`form-submit${sent ? " sent" : ""}`} type="submit">
-                {sent ? "✓ Message Received!" : "Launch Project →"}
-              </button>
-            </form>
-          </div>
-
-          <div className="contact-info fade-up-4">
-            <div>
-              <span className="contact-block-label">Direct WhatsApp</span>
-              <a className="contact-link" href={`https://wa.me/${DATA.brand.whatsapp}`} target="_blank" rel="noreferrer">WhatsApp Us</a>
-              <div className="contact-email">{DATA.brand.email}</div>
-            </div>
-            <div style={{ borderTop: "1px solid var(--border)", paddingTop: 32 }}>
-              <span className="contact-block-label">Social Connect</span>
-              <div className="social-row">
-                <div className="social-icon">📘</div>
-                <span className="social-handle">{DATA.brand.facebook}</span>
-              </div>
-              <div className="social-row">
-                <div className="social-icon">📸</div>
-                <span className="social-handle">@{DATA.brand.instagram}</span>
-              </div>
-            </div>
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 24 }}>
-              <div style={{ fontSize: 11, letterSpacing: 2, color: "var(--gold)", fontWeight: 700, textTransform: "uppercase", marginBottom: 10 }}>Response Time</div>
-              <div style={{ fontFamily: "'Bebas Neue', cursive", fontSize: 40, color: "#e8e0d5", letterSpacing: 2 }}>{"< 2 HRS"}</div>
-              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>We respond fast. Your project can't wait.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── FOOTER ───────────────────────────────────────────────────
-function Footer({ setPage }) {
-  return (
-    <footer className="footer">
-      <div className="footer-inner">
+    <div className="max-w-6xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
         <div>
-          <div style={{ fontFamily: "'Bebas Neue', cursive", fontSize: 28, letterSpacing: 3, color: "#e8e0d5", marginBottom: 6 }}>{DATA.brand.name}</div>
-          <div className="footer-copy">© {new Date().getFullYear()} Nexus Visuals Studio. All rights reserved.</div>
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">{CONTENT.contact.cta}</h2>
+          <p className="text-xl text-neutral-400 mb-12">
+            Ready to elevate your visuals? Reach out today to discuss your next project.
+          </p>
+          
+          <div className="space-y-6">
+            <a href={`mailto:${CONTENT.contact.email}`} className="flex items-center p-4 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-colors group">
+              <div className="bg-neutral-800 p-3 rounded-xl mr-4 group-hover:bg-white group-hover:text-black transition-colors">
+                <Mail className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm text-neutral-500 mb-1">Email</p>
+                <p className="font-medium">{CONTENT.contact.email}</p>
+              </div>
+            </a>
+            
+            <a href={`https://wa.me/${CONTENT.contact.whatsapp.replace('+', '')}`} target="_blank" rel="noreferrer" className="flex items-center p-4 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-colors group">
+              <div className="bg-neutral-800 p-3 rounded-xl mr-4 group-hover:bg-[#25D366] group-hover:text-white transition-colors">
+                <MessageCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm text-neutral-500 mb-1">WhatsApp</p>
+                <p className="font-medium">Message via WhatsApp</p>
+              </div>
+            </a>
+
+            <a href={CONTENT.contact.facebookLink} target="_blank" rel="noreferrer" className="flex items-center p-4 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-colors group">
+              <div className="bg-neutral-800 p-3 rounded-xl mr-4 group-hover:bg-[#1877F2] group-hover:text-white transition-colors">
+                <Facebook className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm text-neutral-500 mb-1">Facebook Page</p>
+                <p className="font-medium">{CONTENT.contact.facebook}</p>
+              </div>
+            </a>
+          </div>
         </div>
-        <div className="footer-links">
-          {["home", "portfolio", "services", "about", "contact"].map((l) => (
-            <button key={l} className="footer-link" onClick={() => setPage(l)}>{l}</button>
-          ))}
+
+        <div className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-3xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-neutral-400 mb-2">Name</label>
+              <input required type="text" className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors" placeholder="John Doe" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-400 mb-2">Email</label>
+              <input required type="email" className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors" placeholder="john@example.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-400 mb-2">Project Details</label>
+              <textarea required rows={4} className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors resize-none" placeholder="Tell me about your design needs..."></textarea>
+            </div>
+            <button 
+              type="submit" 
+              disabled={formStatus !== 'idle'}
+              className="w-full bg-white text-black font-medium py-4 rounded-xl hover:bg-neutral-200 transition-colors flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {formStatus === 'idle' && <>Send Message <Send className="w-4 h-4 ml-2" /></>}
+              {formStatus === 'sending' && 'Sending...'}
+              {formStatus === 'success' && <>Message Sent! <CheckCircle2 className="w-4 h-4 ml-2" /></>}
+            </button>
+          </form>
         </div>
       </div>
-    </footer>
+    </div>
   );
 }
 
-// ─── APP ──────────────────────────────────────────────────────
+/* ======================================================================
+  MAIN APP COMPONENT
+======================================================================
+*/
 export default function App() {
-  const [page, setPage] = useState("home");
+  useFavicon();
+  const [currentPage, setCurrentPage] = useState('home');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const setPageAndScroll = (p) => {
-    setPage(p);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  // Smooth Multi-page Navigation
+  const navigate = (page) => {
+    if (page === currentPage) return;
+    setIsMobileMenuOpen(false);
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setIsTransitioning(false);
+    }, 300); // Wait for fade out
   };
 
-  const pages = {
-    home: <Home setPage={setPageAndScroll} />,
-    portfolio: <Portfolio />,
-    services: <Services setPage={setPageAndScroll} />,
-    about: <About />,
-    contact: <Contact />,
+  const navLinks = [
+    { id: 'home', label: 'Home' },
+    { id: 'portfolio', label: 'Portfolio' },
+    { id: 'services', label: 'Services' },
+    { id: 'about', label: 'About' },
+    { id: 'contact', label: 'Contact' }
+  ];
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'home': return <HomeView navigate={navigate} />;
+      case 'portfolio': return <PortfolioView />;
+      case 'services': return <ServicesView />;
+      case 'about': return <AboutView />;
+      case 'contact': return <ContactView />;
+      default: return <HomeView navigate={navigate} />;
+    }
   };
 
   return (
-    <div className="grain">
-      <Navigation page={page} setPage={setPageAndScroll} />
-      <main style={{ minHeight: "100vh" }}>{pages[page]}</main>
-      <Footer setPage={setPageAndScroll} />
-      <Ticker />
+    <div className="min-h-screen bg-[#050505] text-neutral-50 font-sans selection:bg-neutral-800 selection:text-white flex flex-col relative overflow-hidden">
+      
+      {/* Global Custom CSS for Animations */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 80s linear infinite;
+        }
+      `}} />
+
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-neutral-900">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo */}
+            <div 
+              onClick={() => navigate('home')}
+              className="flex items-center space-x-2 cursor-pointer group"
+            >
+              <div className="w-10 h-10 bg-white text-black flex items-center justify-center rounded-xl font-black text-xl tracking-tighter group-hover:bg-neutral-200 transition-colors">
+                {CONTENT.brand.initials}
+              </div>
+              <span className="font-bold text-lg tracking-tight hidden sm:block">
+                {CONTENT.brand.name}
+              </span>
+            </div>
+
+            {/* Desktop Nav */}
+            <div className="hidden md:flex space-x-1 border border-neutral-800 rounded-full p-1 bg-neutral-900/50">
+              {navLinks.map(link => (
+                <button
+                  key={link.id}
+                  onClick={() => navigate(link.id)}
+                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                    currentPage === link.id 
+                      ? 'bg-neutral-800 text-white shadow-sm' 
+                      : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
+                  }`}
+                >
+                  {link.label}
+                </button>
+              ))}
+            </div>
+
+            {/* CTA Button */}
+            <div className="hidden md:block">
+              <button 
+                onClick={() => navigate('contact')}
+                className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium hover:bg-neutral-200 transition-colors"
+              >
+                Let's Talk
+              </button>
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <div className="md:hidden">
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 text-neutral-400 hover:text-white"
+              >
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-20 left-0 w-full bg-[#050505] border-b border-neutral-900 p-4 space-y-2">
+            {navLinks.map(link => (
+              <button
+                key={link.id}
+                onClick={() => navigate(link.id)}
+                className={`block w-full text-left px-4 py-4 rounded-2xl text-base font-medium transition-colors ${
+                  currentPage === link.id 
+                    ? 'bg-neutral-900 text-white' 
+                    : 'text-neutral-400 hover:bg-neutral-900/50'
+                }`}
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </nav>
+
+      {/* Main Content Area with Fade Transition */}
+      <main 
+        className={`flex-grow transition-opacity duration-300 ease-in-out ${
+          isTransitioning ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
+        {renderPage()}
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-neutral-900 py-8 text-center text-neutral-500 text-sm z-10 relative bg-[#050505]">
+        <p>&copy; {new Date().getFullYear()} {CONTENT.brand.name}. All rights reserved.</p>
+      </footer>
+
+      {/* Rotating Tips Widget */}
+      <RotatingTip />
     </div>
   );
 }
