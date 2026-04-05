@@ -1,563 +1,481 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Menu, X, Mail, MessageCircle, Facebook, 
-  ArrowRight, Layout, Image as ImageIcon, Calendar, Sparkles, 
-  CheckCircle2, Send 
-} from 'lucide-react';
-
-/* ======================================================================
-  CONTENT CONFIGURATION (BUILDER-FRIENDLY)
-  Edit the text, links, and images below to update the website content.
-======================================================================
-*/
-const CONTENT = {
-  brand: {
-    name: "Nexus Visuals",
-    initials: "NV",
-  },
-  hero: {
-    tagline: "Clean Visuals. Strong Impact.",
-    intro: "We create premium flyer designs for brands, businesses, and events.",
-    cta1: "View Portfolio",
-    cta2: "Contact Me"
-  },
-  about: {
-    title: "About Us",
-    description: "Nexus Visuals is a creative design brand focused on delivering clean, modern, and high-quality visuals that help brands stand out and attract customers. We believe in the power of minimalism, precision, and striking typography to tell your brand's unique story."
-  },
-  tips: [
-    "Clean design attracts more customers.",
-    "Less clutter, more impact.",
-    "Consistency builds brand trust.",
-    "Great visuals tell a compelling story.",
-    "White space is an active design element."
-  ],
-  services: [
-    {
-      id: 1,
-      title: "Premium Flyer Design",
-      desc: "High-end flyers that capture attention immediately.",
-      icon: "sparkles"
-    },
-    {
-      id: 2,
-      title: "Social Media Design",
-      desc: "Cohesive feeds and engaging post graphics.",
-      icon: "layout"
-    },
-    {
-      id: 3,
-      title: "Monthly Design Packages",
-      desc: "Consistent visual branding on a retainer basis.",
-      icon: "calendar"
-    },
-    {
-      id: 4,
-      title: "Event & Church Flyers",
-      desc: "Elegant and structured designs for gatherings.",
-      icon: "image"
-    }
-  ],
-  portfolio: [
-    { id: 1, category: "Food", src: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=800", alt: "Gourmet Food Flyer" },
-    { id: 2, category: "Fashion", src: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800", alt: "Fashion Brand Promo" },
-    { id: 3, category: "Event", src: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=800", alt: "Church/Event Flyer" },
-    { id: 4, category: "Business", src: "https://images.unsplash.com/photo-1556761175-5973dc0f32b7?auto=format&fit=crop&q=80&w=800", alt: "Corporate Business Flyer" },
-    { id: 5, category: "Fashion", src: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=800", alt: "Fashion Lookbook" },
-    { id: 6, category: "Food", src: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80&w=800", alt: "Restaurant Menu Promo" },
-  ],
-  contact: {
-    email: "nexusvisuals70@gmail.com",
-    whatsapp: "+2340000000000", // Update with actual number
-    facebook: "Nexus Visuals Studios",
-    facebookLink: "#", // Update with actual URL
-    cta: "Let’s work together"
-  }
-};
-
-/* ======================================================================
-  COMPONENTS
-======================================================================
-*/
-
-const IconMap = {
-  sparkles: Sparkles,
-  layout: Layout,
-  calendar: Calendar,
-  image: ImageIcon,
-};
-
-// 1. Hook to Inject Custom Favicon
-const useFavicon = () => {
-  useEffect(() => {
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <rect width="100" height="100" fill="#09090b" rx="20"/>
-        <text x="50%" y="55%" font-family="sans-serif" font-weight="900" font-size="44" fill="#fafafa" text-anchor="middle" dominant-baseline="middle">
-          ${CONTENT.brand.initials}
-        </text>
-      </svg>
-    `;
-    const blob = new Blob([svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    let link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.head.appendChild(link);
-    }
-    link.href = url;
-    return () => URL.revokeObjectURL(url);
-  }, []);
-};
-
-// 2. Rotating Tip Component
-const RotatingTip = () => {
-  const [index, setIndex] = useState(0);
-  const [fade, setFade] = useState(true);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setFade(false); 
-      setTimeout(() => {
-        setIndex((prev) => (prev + 1) % CONTENT.tips.length);
-        setFade(true); 
-      }, 500); 
-    }, 10000); 
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="fixed bottom-6 right-6 z-40 max-w-xs bg-neutral-900/90 backdrop-blur-md border border-neutral-800 text-neutral-300 text-sm px-4 py-3 rounded-2xl shadow-2xl pointer-events-none hidden md:flex items-start space-x-3">
-      <Sparkles className="w-4 h-4 text-neutral-500 mt-0.5 flex-shrink-0" />
-      <div className={`transition-opacity duration-500 ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}>
-        <span className="font-medium text-white block mb-0.5">Design Tip</span>
-        {CONTENT.tips[index]}
-      </div>
-    </div>
-  );
-};
-
-// 3. Page Views
-const HomeView = ({ navigate }) => {
-  // Parallax / Artistic Mouse Tracker
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    let frameId;
-    const handleMouseMove = (e) => {
-      cancelAnimationFrame(frameId);
-      frameId = requestAnimationFrame(() => {
-        const x = (e.clientX / window.innerWidth) * 2 - 1;
-        const y = (e.clientY / window.innerHeight) * 2 - 1;
-        setMousePos({ x, y });
-      });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      cancelAnimationFrame(frameId);
-    };
-  }, []);
-
-  return (
-    <div className="relative flex flex-col items-center justify-center min-h-[85vh] text-center px-4 w-full overflow-hidden">
-      
-      {/* ARTISTIC AMBIENT BACKGROUND */}
-      <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
-        
-        {/* Floating Glowing Orbs that react to mouse */}
-        <div className="absolute top-1/4 left-1/4 w-[25rem] h-[25rem] bg-indigo-600/10 rounded-full blur-[100px] transition-transform duration-700 ease-out"
-             style={{ transform: `translate(${mousePos.x * -60}px, ${mousePos.y * -60}px)` }}></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[25rem] h-[25rem] bg-fuchsia-600/10 rounded-full blur-[100px] transition-transform duration-700 ease-out"
-             style={{ transform: `translate(${mousePos.x * 60}px, ${mousePos.y * 60}px)` }}></div>
-        
-        {/* Rotating Geometric Abstract "Nexus" Mesh */}
-        <div className="absolute transition-transform duration-700 ease-out opacity-[0.15] text-neutral-400"
-             style={{ transform: `translate(${mousePos.x * 30}px, ${mousePos.y * 30}px) rotate(${mousePos.x * 10}deg)` }}>
-          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-[600px] h-[600px] md:w-[800px] md:h-[800px] animate-spin-slow">
-            <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" strokeWidth="0.2" strokeDasharray="2 6" />
-            <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="0.3" opacity="0.5"/>
-            <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="currentColor" strokeWidth="0.3" transform="rotate(30 100 100)" />
-            <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="currentColor" strokeWidth="0.3" transform="rotate(-30 100 100)" />
-            <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="currentColor" strokeWidth="0.3" transform="rotate(90 100 100)" />
-            <circle cx="100" cy="100" r="2" fill="currentColor" />
-          </svg>
-        </div>
-      </div>
-
-      {/* FOREGROUND HERO CONTENT (With staggered entrance) */}
-      <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
-        <div 
-          className="inline-flex items-center space-x-2 bg-neutral-900 border border-neutral-800 px-4 py-2 rounded-full mb-8 animate-fade-in-up"
-          style={{ animationDelay: '0ms' }}
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-          </span>
-          <span className="text-xs font-medium tracking-widest uppercase text-neutral-300">Available for projects</span>
-        </div>
-        
-        <h1 
-          className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight animate-fade-in-up"
-          style={{ animationDelay: '150ms' }}
-        >
-          {CONTENT.hero.tagline.split('. ')[0]}. <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-neutral-200 to-neutral-600">
-            {CONTENT.hero.tagline.split('. ')[1]}
-          </span>
-        </h1>
-        
-        <p 
-          className="text-lg md:text-xl text-neutral-400 mb-10 max-w-2xl animate-fade-in-up"
-          style={{ animationDelay: '300ms' }}
-        >
-          {CONTENT.hero.intro}
-        </p>
-        
-        <div 
-          className="flex flex-col sm:flex-row items-center gap-4 animate-fade-in-up w-full justify-center"
-          style={{ animationDelay: '450ms' }}
-        >
-          <button 
-            onClick={() => navigate('portfolio')}
-            className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-full font-medium hover:bg-neutral-200 transition-colors flex items-center justify-center group shadow-lg shadow-white/5"
-          >
-            {CONTENT.hero.cta1}
-            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-          </button>
-          <button 
-            onClick={() => navigate('contact')}
-            className="w-full sm:w-auto bg-transparent border border-neutral-700 text-white px-8 py-4 rounded-full font-medium hover:bg-neutral-900 hover:border-neutral-500 transition-colors"
-          >
-            {CONTENT.hero.cta2}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const PortfolioView = () => (
-  <div className="max-w-6xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
-    <div className="mb-12 md:mb-20">
-      <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Selected Works</h2>
-      <p className="text-neutral-400 text-lg">A showcase of premium flyer designs crafted for impact.</p>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {CONTENT.portfolio.map((item) => (
-        <div key={item.id} className="group relative aspect-[4/5] rounded-3xl overflow-hidden bg-neutral-900 border border-neutral-800">
-          <img 
-            src={item.src} 
-            alt={item.alt} 
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-            <span className="text-xs font-bold tracking-widest uppercase text-neutral-300 mb-1">{item.category}</span>
-            <h3 className="text-xl font-semibold text-white">{item.alt}</h3>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const ServicesView = () => (
-  <div className="max-w-6xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
-    <div className="mb-12 md:mb-20 max-w-2xl">
-      <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Expertise & Services</h2>
-      <p className="text-neutral-400 text-lg">Comprehensive design solutions tailored to elevate your brand's presence.</p>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {CONTENT.services.map((service) => {
-        const IconComponent = IconMap[service.icon];
-        return (
-          <div key={service.id} className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-3xl hover:bg-neutral-900 transition-colors">
-            <div className="bg-neutral-800 w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
-              <IconComponent className="w-6 h-6 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold mb-3">{service.title}</h3>
-            <p className="text-neutral-400 leading-relaxed">{service.desc}</p>
-          </div>
-        )
-      })}
-    </div>
-  </div>
-);
-
-const AboutView = () => (
-  <div className="max-w-4xl mx-auto px-4 py-12 md:py-20 min-h-[70vh] flex flex-col justify-center animate-fade-in-up">
-    <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-8">{CONTENT.about.title}</h2>
-    <div className="text-xl md:text-2xl text-neutral-300 leading-relaxed font-light space-y-6">
-      <p>{CONTENT.about.description}</p>
-      <div className="pt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {['Clean Aesthetics', 'Strategic Layouts', 'Premium Typography'].map((val, i) => (
-          <div key={i} className="flex items-center space-x-3">
-            <CheckCircle2 className="w-5 h-5 text-neutral-500" />
-            <span className="text-base font-medium">{val}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
-const ContactView = () => {
-  const [formStatus, setFormStatus] = useState('idle');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setFormStatus('sending');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Visuals | Clean Visuals. Strong Impact.</title>
     
-    const myForm = e.target;
-    const formData = new FormData(myForm);
-
-    // Submit form data to Netlify's built-in form handler
-    fetch("/", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(formData).toString(),
-    })
-      .then(() => setFormStatus('success'))
-      .catch((error) => {
-        console.error('Form submission error:', error);
-        setFormStatus('success'); // Fallback visually if running locally without Netlify
-      });
-  };
-
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        <div>
-          <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">{CONTENT.contact.cta}</h2>
-          <p className="text-xl text-neutral-400 mb-12">
-            Ready to elevate your visuals? Reach out today to discuss your next project.
-          </p>
-          
-          <div className="space-y-6">
-            <a href={`mailto:${CONTENT.contact.email}`} className="flex items-center p-4 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-colors group">
-              <div className="bg-neutral-800 p-3 rounded-xl mr-4 group-hover:bg-white group-hover:text-black transition-colors">
-                <Mail className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm text-neutral-500 mb-1">Email</p>
-                <p className="font-medium">{CONTENT.contact.email}</p>
-              </div>
-            </a>
-            
-            <a href={`https://wa.me/${CONTENT.contact.whatsapp.replace('+', '')}`} target="_blank" rel="noreferrer" className="flex items-center p-4 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-colors group">
-              <div className="bg-neutral-800 p-3 rounded-xl mr-4 group-hover:bg-[#25D366] group-hover:text-white transition-colors">
-                <MessageCircle className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm text-neutral-500 mb-1">WhatsApp</p>
-                <p className="font-medium">Message via WhatsApp</p>
-              </div>
-            </a>
-
-            <a href={CONTENT.contact.facebookLink} target="_blank" rel="noreferrer" className="flex items-center p-4 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-colors group">
-              <div className="bg-neutral-800 p-3 rounded-xl mr-4 group-hover:bg-[#1877F2] group-hover:text-white transition-colors">
-                <Facebook className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm text-neutral-500 mb-1">Facebook Page</p>
-                <p className="font-medium">{CONTENT.contact.facebook}</p>
-              </div>
-            </a>
-          </div>
-        </div>
-
-        <div className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-3xl">
-          <form name="contact" method="POST" data-netlify="true" onSubmit={handleSubmit} className="space-y-6">
-            {/* Hidden input required for Netlify to recognize the form via AJAX */}
-            <input type="hidden" name="form-name" value="contact" />
-            
-            <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-2">Name</label>
-              <input required type="text" name="name" className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors" placeholder="John Doe" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-2">Email</label>
-              <input required type="email" name="email" className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors" placeholder="john@example.com" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-2">Project Details</label>
-              <textarea required rows={4} name="message" className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors resize-none" placeholder="Tell me about your design needs..."></textarea>
-            </div>
-            <button 
-              type="submit" 
-              disabled={formStatus !== 'idle'}
-              className="w-full bg-white text-black font-medium py-4 rounded-xl hover:bg-neutral-200 transition-colors flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {formStatus === 'idle' && <>Send Message <Send className="w-4 h-4 ml-2" /></>}
-              {formStatus === 'sending' && 'Sending...'}
-              {formStatus === 'success' && <>Message Sent! <CheckCircle2 className="w-4 h-4 ml-2" /></>}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ======================================================================
-  MAIN APP COMPONENT
-======================================================================
-*/
-export default function App() {
-  useFavicon();
-  const [currentPage, setCurrentPage] = useState('home');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  // Smooth Multi-page Navigation
-  const navigate = (page) => {
-    if (page === currentPage) return;
-    setIsMobileMenuOpen(false);
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setIsTransitioning(false);
-    }, 300); // Wait for fade out
-  };
-
-  const navLinks = [
-    { id: 'home', label: 'Home' },
-    { id: 'portfolio', label: 'Portfolio' },
-    { id: 'services', label: 'Services' },
-    { id: 'about', label: 'About' },
-    { id: 'contact', label: 'Contact' }
-  ];
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home': return <HomeView navigate={navigate} />;
-      case 'portfolio': return <PortfolioView />;
-      case 'services': return <ServicesView />;
-      case 'about': return <AboutView />;
-      case 'contact': return <ContactView />;
-      default: return <HomeView navigate={navigate} />;
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Import Map for React and Lucide Icons to work in the browser -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.344.0?external=react"
+      }
     }
-  };
+    </script>
+    
+    <!-- Babel for compiling JSX in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-[#050505] text-neutral-50 selection:bg-neutral-800 selection:text-white">
 
-  return (
-    <div className="min-h-screen bg-[#050505] text-neutral-50 font-sans selection:bg-neutral-800 selection:text-white flex flex-col relative overflow-hidden">
-      
-      {/* Global Custom CSS for Animations */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
+    <!-- Hidden Static Form: Netlify Needs This to Recognize the React Form -->
+    <form name="contact" netlify netlify-honeypot="bot-field" hidden>
+      <input type="text" name="name" />
+      <input type="email" name="email" />
+      <textarea name="message"></textarea>
+    </form>
+
+    <!-- The React App Mounts Here -->
+    <div id="root"></div>
+
+    <!-- Application Code -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect } from 'react';
+      import { createRoot } from 'react-dom/client';
+      import { 
+        Menu, X, Mail, MessageCircle, Facebook, 
+        ArrowRight, Layout, Image as ImageIcon, Calendar, Sparkles, 
+        CheckCircle2, Send 
+      } from 'lucide-react';
+
+      /* ======================================================================
+        CONTENT CONFIGURATION (BUILDER-FRIENDLY)
+      ====================================================================== */
+      const CONTENT = {
+        brand: {
+          name: "Nexus Visuals",
+          initials: "NV",
+        },
+        hero: {
+          tagline: "Clean Visuals. Strong Impact.",
+          intro: "We create premium flyer designs for brands, businesses, and events.",
+          cta1: "View Portfolio",
+          cta2: "Contact Me"
+        },
+        about: {
+          title: "About Us",
+          description: "Nexus Visuals is a creative design brand focused on delivering clean, modern, and high-quality visuals that help brands stand out and attract customers. We believe in the power of minimalism, precision, and striking typography to tell your brand's unique story."
+        },
+        tips: [
+          "Clean design attracts more customers.",
+          "Less clutter, more impact.",
+          "Consistency builds brand trust.",
+          "Great visuals tell a compelling story.",
+          "White space is an active design element."
+        ],
+        services: [
+          { id: 1, title: "Premium Flyer Design", desc: "High-end flyers that capture attention immediately.", icon: "sparkles" },
+          { id: 2, title: "Social Media Design", desc: "Cohesive feeds and engaging post graphics.", icon: "layout" },
+          { id: 3, title: "Monthly Design Packages", desc: "Consistent visual branding on a retainer basis.", icon: "calendar" },
+          { id: 4, title: "Event & Church Flyers", desc: "Elegant and structured designs for gatherings.", icon: "image" }
+        ],
+        portfolio: [
+          { id: 1, category: "Food", src: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=800", alt: "Gourmet Food Flyer" },
+          { id: 2, category: "Fashion", src: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800", alt: "Fashion Brand Promo" },
+          { id: 3, category: "Event", src: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=800", alt: "Church/Event Flyer" },
+          { id: 4, category: "Business", src: "https://images.unsplash.com/photo-1556761175-5973dc0f32b7?auto=format&fit=crop&q=80&w=800", alt: "Corporate Business Flyer" },
+          { id: 5, category: "Fashion", src: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=800", alt: "Fashion Lookbook" },
+          { id: 6, category: "Food", src: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80&w=800", alt: "Restaurant Menu Promo" },
+        ],
+        contact: {
+          email: "nexusvisuals70@gmail.com",
+          whatsapp: "+2340000000000",
+          facebook: "Nexus Visuals Studios",
+          facebookLink: "#",
+          cta: "Let’s work together"
         }
-        .animate-fade-in-up {
-          animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          opacity: 0;
-        }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 80s linear infinite;
-        }
-      `}} />
+      };
 
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-neutral-900">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <div 
-              onClick={() => navigate('home')}
-              className="flex items-center space-x-2 cursor-pointer group"
-            >
-              <div className="w-10 h-10 bg-white text-black flex items-center justify-center rounded-xl font-black text-xl tracking-tighter group-hover:bg-neutral-200 transition-colors">
-                {CONTENT.brand.initials}
-              </div>
-              <span className="font-bold text-lg tracking-tight hidden sm:block">
-                {CONTENT.brand.name}
-              </span>
-            </div>
+      /* ======================================================================
+        COMPONENTS
+      ====================================================================== */
+      const IconMap = { sparkles: Sparkles, layout: Layout, calendar: Calendar, image: ImageIcon };
 
-            {/* Desktop Nav */}
-            <div className="hidden md:flex space-x-1 border border-neutral-800 rounded-full p-1 bg-neutral-900/50">
-              {navLinks.map(link => (
-                <button
-                  key={link.id}
-                  onClick={() => navigate(link.id)}
-                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                    currentPage === link.id 
-                      ? 'bg-neutral-800 text-white shadow-sm' 
-                      : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
-                  }`}
-                >
-                  {link.label}
-                </button>
-              ))}
-            </div>
+      const useFavicon = () => {
+        useEffect(() => {
+          const svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <rect width="100" height="100" fill="#09090b" rx="20"/>
+              <text x="50%" y="55%" font-family="sans-serif" font-weight="900" font-size="44" fill="#fafafa" text-anchor="middle" dominant-baseline="middle">
+                ${CONTENT.brand.initials}
+              </text>
+            </svg>
+          `;
+          const blob = new Blob([svg], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(blob);
+          let link = document.querySelector("link[rel~='icon']");
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+          }
+          link.href = url;
+          return () => URL.revokeObjectURL(url);
+        }, []);
+      };
 
-            {/* CTA Button */}
-            <div className="hidden md:block">
-              <button 
-                onClick={() => navigate('contact')}
-                className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium hover:bg-neutral-200 transition-colors"
-              >
-                Let's Talk
-              </button>
-            </div>
+      const RotatingTip = () => {
+        const [index, setIndex] = useState(0);
+        const [fade, setFade] = useState(true);
 
-            {/* Mobile Menu Toggle */}
-            <div className="md:hidden">
-              <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 text-neutral-400 hover:text-white"
-              >
-                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
+        useEffect(() => {
+          const interval = setInterval(() => {
+            setFade(false); 
+            setTimeout(() => {
+              setIndex((prev) => (prev + 1) % CONTENT.tips.length);
+              setFade(true); 
+            }, 500); 
+          }, 10000); 
+          return () => clearInterval(interval);
+        }, []);
+
+        return (
+          <div className="fixed bottom-6 right-6 z-40 max-w-xs bg-neutral-900/90 backdrop-blur-md border border-neutral-800 text-neutral-300 text-sm px-4 py-3 rounded-2xl shadow-2xl pointer-events-none hidden md:flex items-start space-x-3">
+            <Sparkles className="w-4 h-4 text-neutral-500 mt-0.5 flex-shrink-0" />
+            <div className={`transition-opacity duration-500 ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}>
+              <span className="font-medium text-white block mb-0.5">Design Tip</span>
+              {CONTENT.tips[index]}
             </div>
           </div>
-        </div>
+        );
+      };
 
-        {/* Mobile Menu Dropdown */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-20 left-0 w-full bg-[#050505] border-b border-neutral-900 p-4 space-y-2">
-            {navLinks.map(link => (
-              <button
-                key={link.id}
-                onClick={() => navigate(link.id)}
-                className={`block w-full text-left px-4 py-4 rounded-2xl text-base font-medium transition-colors ${
-                  currentPage === link.id 
-                    ? 'bg-neutral-900 text-white' 
-                    : 'text-neutral-400 hover:bg-neutral-900/50'
-                }`}
-              >
-                {link.label}
-              </button>
+      const HomeView = ({ navigate }) => {
+        const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+        useEffect(() => {
+          let frameId;
+          const handleMouseMove = (e) => {
+            cancelAnimationFrame(frameId);
+            frameId = requestAnimationFrame(() => {
+              const x = (e.clientX / window.innerWidth) * 2 - 1;
+              const y = (e.clientY / window.innerHeight) * 2 - 1;
+              setMousePos({ x, y });
+            });
+          };
+          window.addEventListener('mousemove', handleMouseMove);
+          return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            cancelAnimationFrame(frameId);
+          };
+        }, []);
+
+        return (
+          <div className="relative flex flex-col items-center justify-center min-h-[85vh] text-center px-4 w-full overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
+              <div className="absolute top-1/4 left-1/4 w-[25rem] h-[25rem] bg-indigo-600/10 rounded-full blur-[100px] transition-transform duration-700 ease-out"
+                   style={{ transform: `translate(${mousePos.x * -60}px, ${mousePos.y * -60}px)` }}></div>
+              <div className="absolute bottom-1/4 right-1/4 w-[25rem] h-[25rem] bg-fuchsia-600/10 rounded-full blur-[100px] transition-transform duration-700 ease-out"
+                   style={{ transform: `translate(${mousePos.x * 60}px, ${mousePos.y * 60}px)` }}></div>
+              
+              <div className="absolute transition-transform duration-700 ease-out opacity-[0.15] text-neutral-400"
+                   style={{ transform: `translate(${mousePos.x * 30}px, ${mousePos.y * 30}px) rotate(${mousePos.x * 10}deg)` }}>
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-[600px] h-[600px] md:w-[800px] md:h-[800px] animate-spin-slow">
+                  <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" strokeWidth="0.2" strokeDasharray="2 6" />
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="0.3" opacity="0.5"/>
+                  <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="currentColor" strokeWidth="0.3" transform="rotate(30 100 100)" />
+                  <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="currentColor" strokeWidth="0.3" transform="rotate(-30 100 100)" />
+                  <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="currentColor" strokeWidth="0.3" transform="rotate(90 100 100)" />
+                  <circle cx="100" cy="100" r="2" fill="currentColor" />
+                </svg>
+              </div>
+            </div>
+
+            <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
+              <div className="inline-flex items-center space-x-2 bg-neutral-900 border border-neutral-800 px-4 py-2 rounded-full mb-8 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                </span>
+                <span className="text-xs font-medium tracking-widest uppercase text-neutral-300">Available for projects</span>
+              </div>
+              
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+                {CONTENT.hero.tagline.split('. ')[0]}. <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-neutral-200 to-neutral-600">
+                  {CONTENT.hero.tagline.split('. ')[1]}
+                </span>
+              </h1>
+              
+              <p className="text-lg md:text-xl text-neutral-400 mb-10 max-w-2xl animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                {CONTENT.hero.intro}
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center gap-4 animate-fade-in-up w-full justify-center" style={{ animationDelay: '450ms' }}>
+                <button onClick={() => navigate('portfolio')} className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-full font-medium hover:bg-neutral-200 transition-colors flex items-center justify-center group shadow-lg shadow-white/5">
+                  {CONTENT.hero.cta1}
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button onClick={() => navigate('contact')} className="w-full sm:w-auto bg-transparent border border-neutral-700 text-white px-8 py-4 rounded-full font-medium hover:bg-neutral-900 hover:border-neutral-500 transition-colors">
+                  {CONTENT.hero.cta2}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const PortfolioView = () => (
+        <div className="max-w-6xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
+          <div className="mb-12 md:mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Selected Works</h2>
+            <p className="text-neutral-400 text-lg">A showcase of premium flyer designs crafted for impact.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {CONTENT.portfolio.map((item) => (
+              <div key={item.id} className="group relative aspect-[4/5] rounded-3xl overflow-hidden bg-neutral-900 border border-neutral-800">
+                <img src={item.src} alt={item.alt} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                  <span className="text-xs font-bold tracking-widest uppercase text-neutral-300 mb-1">{item.category}</span>
+                  <h3 className="text-xl font-semibold text-white">{item.alt}</h3>
+                </div>
+              </div>
             ))}
           </div>
-        )}
-      </nav>
+        </div>
+      );
 
-      {/* Main Content Area with Fade Transition */}
-      <main 
-        className={`flex-grow transition-opacity duration-300 ease-in-out ${
-          isTransitioning ? 'opacity-0' : 'opacity-100'
-        }`}
-      >
-        {renderPage()}
-      </main>
+      const ServicesView = () => (
+        <div className="max-w-6xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
+          <div className="mb-12 md:mb-20 max-w-2xl">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Expertise & Services</h2>
+            <p className="text-neutral-400 text-lg">Comprehensive design solutions tailored to elevate your brand's presence.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {CONTENT.services.map((service) => {
+              const IconComponent = IconMap[service.icon];
+              return (
+                <div key={service.id} className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-3xl hover:bg-neutral-900 transition-colors">
+                  <div className="bg-neutral-800 w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                    <IconComponent className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">{service.title}</h3>
+                  <p className="text-neutral-400 leading-relaxed">{service.desc}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      );
 
-      {/* Footer */}
-      <footer className="border-t border-neutral-900 py-8 text-center text-neutral-500 text-sm z-10 relative bg-[#050505]">
-        <p>&copy; {new Date().getFullYear()} {CONTENT.brand.name}. All rights reserved.</p>
-      </footer>
+      const AboutView = () => (
+        <div className="max-w-4xl mx-auto px-4 py-12 md:py-20 min-h-[70vh] flex flex-col justify-center animate-fade-in-up">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-8">{CONTENT.about.title}</h2>
+          <div className="text-xl md:text-2xl text-neutral-300 leading-relaxed font-light space-y-6">
+            <p>{CONTENT.about.description}</p>
+            <div className="pt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {['Clean Aesthetics', 'Strategic Layouts', 'Premium Typography'].map((val, i) => (
+                <div key={i} className="flex items-center space-x-3">
+                  <CheckCircle2 className="w-5 h-5 text-neutral-500" />
+                  <span className="text-base font-medium">{val}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
 
-      {/* Rotating Tips Widget */}
-      <RotatingTip />
-    </div>
-  );
-}
+      const ContactView = () => {
+        const [formStatus, setFormStatus] = useState('idle');
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          setFormStatus('sending');
+          
+          const myForm = e.target;
+          const formData = new FormData(myForm);
+
+          fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams(formData).toString(),
+          })
+            .then(() => setFormStatus('success'))
+            .catch((error) => {
+              console.error('Form submission error:', error);
+              setFormStatus('success'); 
+            });
+        };
+
+        return (
+          <div className="max-w-6xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+              <div>
+                <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">{CONTENT.contact.cta}</h2>
+                <p className="text-xl text-neutral-400 mb-12">
+                  Ready to elevate your visuals? Reach out today to discuss your next project.
+                </p>
+                
+                <div className="space-y-6">
+                  <a href={`mailto:${CONTENT.contact.email}`} className="flex items-center p-4 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-colors group">
+                    <div className="bg-neutral-800 p-3 rounded-xl mr-4 group-hover:bg-white group-hover:text-black transition-colors">
+                      <Mail className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-neutral-500 mb-1">Email</p>
+                      <p className="font-medium">{CONTENT.contact.email}</p>
+                    </div>
+                  </a>
+                  
+                  <a href={`https://wa.me/${CONTENT.contact.whatsapp.replace('+', '')}`} target="_blank" rel="noreferrer" className="flex items-center p-4 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-colors group">
+                    <div className="bg-neutral-800 p-3 rounded-xl mr-4 group-hover:bg-[#25D366] group-hover:text-white transition-colors">
+                      <MessageCircle className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-neutral-500 mb-1">WhatsApp</p>
+                      <p className="font-medium">Message via WhatsApp</p>
+                    </div>
+                  </a>
+
+                  <a href={CONTENT.contact.facebookLink} target="_blank" rel="noreferrer" className="flex items-center p-4 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-colors group">
+                    <div className="bg-neutral-800 p-3 rounded-xl mr-4 group-hover:bg-[#1877F2] group-hover:text-white transition-colors">
+                      <Facebook className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-neutral-500 mb-1">Facebook Page</p>
+                      <p className="font-medium">{CONTENT.contact.facebook}</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              <div className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-3xl">
+                <form name="contact" method="POST" data-netlify="true" onSubmit={handleSubmit} className="space-y-6">
+                  <input type="hidden" name="form-name" value="contact" />
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-2">Name</label>
+                    <input required type="text" name="name" className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors" placeholder="John Doe" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-2">Email</label>
+                    <input required type="email" name="email" className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors" placeholder="john@example.com" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-2">Project Details</label>
+                    <textarea required rows={4} name="message" className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors resize-none" placeholder="Tell me about your design needs..."></textarea>
+                  </div>
+                  <button type="submit" disabled={formStatus !== 'idle'} className="w-full bg-white text-black font-medium py-4 rounded-xl hover:bg-neutral-200 transition-colors flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
+                    {formStatus === 'idle' && <>Send Message <Send className="w-4 h-4 ml-2" /></>}
+                    {formStatus === 'sending' && 'Sending...'}
+                    {formStatus === 'success' && <>Message Sent! <CheckCircle2 className="w-4 h-4 ml-2" /></>}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function App() {
+        useFavicon();
+        const [currentPage, setCurrentPage] = useState('home');
+        const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+        const [isTransitioning, setIsTransitioning] = useState(false);
+
+        const navigate = (page) => {
+          if (page === currentPage) return;
+          setIsMobileMenuOpen(false);
+          setIsTransitioning(true);
+          setTimeout(() => {
+            setCurrentPage(page);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setIsTransitioning(false);
+          }, 300);
+        };
+
+        const navLinks = [
+          { id: 'home', label: 'Home' },
+          { id: 'portfolio', label: 'Portfolio' },
+          { id: 'services', label: 'Services' },
+          { id: 'about', label: 'About' },
+          { id: 'contact', label: 'Contact' }
+        ];
+
+        const renderPage = () => {
+          switch (currentPage) {
+            case 'home': return <HomeView navigate={navigate} />;
+            case 'portfolio': return <PortfolioView />;
+            case 'services': return <ServicesView />;
+            case 'about': return <AboutView />;
+            case 'contact': return <ContactView />;
+            default: return <HomeView navigate={navigate} />;
+          }
+        };
+
+        return (
+          <div className="min-h-screen flex flex-col relative overflow-hidden font-sans">
+            <style dangerouslySetInnerHTML={{__html: `
+              @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+              .animate-fade-in-up { animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+              @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+              .animate-spin-slow { animation: spin-slow 80s linear infinite; }
+            `}} />
+
+            <nav className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-neutral-900">
+              <div className="max-w-7xl mx-auto px-4 md:px-6">
+                <div className="flex items-center justify-between h-20">
+                  <div onClick={() => navigate('home')} className="flex items-center space-x-2 cursor-pointer group">
+                    <div className="w-10 h-10 bg-white text-black flex items-center justify-center rounded-xl font-black text-xl tracking-tighter group-hover:bg-neutral-200 transition-colors">
+                      {CONTENT.brand.initials}
+                    </div>
+                    <span className="font-bold text-lg tracking-tight hidden sm:block">{CONTENT.brand.name}</span>
+                  </div>
+
+                  <div className="hidden md:flex space-x-1 border border-neutral-800 rounded-full p-1 bg-neutral-900/50">
+                    {navLinks.map(link => (
+                      <button key={link.id} onClick={() => navigate(link.id)} className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${currentPage === link.id ? 'bg-neutral-800 text-white shadow-sm' : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'}`}>
+                        {link.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="hidden md:block">
+                    <button onClick={() => navigate('contact')} className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium hover:bg-neutral-200 transition-colors">
+                      Let's Talk
+                    </button>
+                  </div>
+
+                  <div className="md:hidden">
+                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-neutral-400 hover:text-white">
+                      {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {isMobileMenuOpen && (
+                <div className="md:hidden absolute top-20 left-0 w-full bg-[#050505] border-b border-neutral-900 p-4 space-y-2">
+                  {navLinks.map(link => (
+                    <button key={link.id} onClick={() => navigate(link.id)} className={`block w-full text-left px-4 py-4 rounded-2xl text-base font-medium transition-colors ${currentPage === link.id ? 'bg-neutral-900 text-white' : 'text-neutral-400 hover:bg-neutral-900/50'}`}>
+                      {link.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </nav>
+
+            <main className={`flex-grow transition-opacity duration-300 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+              {renderPage()}
+            </main>
+
+            <footer className="border-t border-neutral-900 py-8 text-center text-neutral-500 text-sm z-10 relative bg-[#050505]">
+              <p>&copy; {new Date().getFullYear()} {CONTENT.brand.name}. All rights reserved.</p>
+            </footer>
+
+            <RotatingTip />
+          </div>
+        );
+      }
+
+      // Initialize React
+      const root = createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+</body>
+</html>
